@@ -6,6 +6,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.masterai.R;
@@ -46,6 +47,18 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         } else {
             holder.ivPostImage.setVisibility(View.GONE);
         }
+
+        View.OnClickListener commentClickListener = v -> {
+            AppCompatActivity activity = (AppCompatActivity) v.getContext();
+            CommentFragment commentFragment = new CommentFragment();
+            activity.getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, commentFragment)
+                .addToBackStack(null)
+                .commit();
+        };
+
+        holder.btnComment.setOnClickListener(commentClickListener);
+        holder.tvCommentCount.setOnClickListener(commentClickListener);
     }
 
     @Override
@@ -55,7 +68,8 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
 
     static class PostViewHolder extends RecyclerView.ViewHolder {
         ImageView ivAvatar, ivPostImage;
-        TextView tvName, tvTime, tvContent;
+        TextView tvName, tvTime, tvContent, tvCommentCount;
+        View btnComment;
 
         public PostViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -64,6 +78,8 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             tvName = itemView.findViewById(R.id.tvName);
             tvTime = itemView.findViewById(R.id.tvTime);
             tvContent = itemView.findViewById(R.id.tvContent);
+            tvCommentCount = itemView.findViewById(R.id.tvCommentCount);
+            btnComment = itemView.findViewById(R.id.btnComment);
         }
     }
 }

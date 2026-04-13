@@ -12,23 +12,16 @@ public class User {
     @SerializedName("password")
     private String password;
 
-    // Constructor dùng cho Register
-    public User(String username, String email, String password) {
-        this.username = username;
-        this.email = email;
-        this.password = password;
-    }
+    @SerializedName("profile_image") // Tên trường khớp với API trả về
+    private String profileImage;
 
-    // Constructor tối ưu dùng cho Login (Chỉ cần username & password)
-    public User(String username, String password) {
+    public User(String username, String password, String s) {
         this.username = username;
         this.password = password;
     }
 
+    // Getters and Setters
     public String getUsername() { return username; }
-    public void setUsername(String username) { this.username = username; }
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-    public String getPassword() { return password; }
-    public void setPassword(String password) { this.password = password; }
+    public String getProfileImage() { return profileImage; }
+    public void setProfileImage(String profileImage) { this.profileImage = profileImage; }
 }

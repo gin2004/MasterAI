@@ -1,4 +1,4 @@
-package com.example.masterai;
+package com.example.masterai.api;
 
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;

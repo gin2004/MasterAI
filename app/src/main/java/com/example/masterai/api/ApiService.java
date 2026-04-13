@@ -1,4 +1,8 @@
-package com.example.masterai;
+package com.example.masterai.api;
+
+import com.example.masterai.model.LoginResponse;
+import com.example.masterai.model.Post;
+import com.example.masterai.model.User;
 
 import java.util.List;
 import retrofit2.Call;
@@ -10,10 +14,10 @@ public interface ApiService {
     @GET("api/users/")
     Call<List<User>> getUsers();
 
-    @POST("api/login/")
-    Call<User> login(@Body User user);
+    @POST("api/users/login/")
+    Call<LoginResponse> login(@Body User user);
 
-    @POST("api/register/")
+    @POST("api/users/register/")
     Call<User> register(@Body User user);
 
     // API cho Post

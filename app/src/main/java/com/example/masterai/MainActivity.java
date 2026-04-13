@@ -10,6 +10,10 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.example.masterai.ui.ai.GenerateFragment;
+import com.example.masterai.ui.comminity.CommunityFragment;
+import com.example.masterai.ui.profile.ProfileFragment;
+
 public class MainActivity extends AppCompatActivity {
 
     @Override

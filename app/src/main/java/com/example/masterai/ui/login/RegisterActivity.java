@@ -1,10 +1,15 @@
-package com.example.masterai;
+package com.example.masterai.ui.login;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.masterai.MainActivity;
+import com.example.masterai.R;
+import com.example.masterai.api.RetrofitClient;
+import com.example.masterai.model.User;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import retrofit2.Call;

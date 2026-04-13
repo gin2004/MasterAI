@@ -1,4 +1,4 @@
-package com.example.masterai;
+package com.example.masterai.model;
 
 import com.google.gson.annotations.SerializedName;
 import java.io.Serializable;

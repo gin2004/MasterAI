@@ -12,15 +12,21 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.example.masterai.ui.ai.GenerateFragment;
 import com.example.masterai.ui.comminity.CommunityFragment;
+import com.example.masterai.ui.comminity.MessageFragment;
+import com.example.masterai.ui.comminity.PostFragment;
 import com.example.masterai.ui.profile.ProfileFragment;
 
 public class MainActivity extends AppCompatActivity {
+
+    private View bottomNav;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
+        
+        bottomNav = findViewById(R.id.bottomNav);
         
         View mainView = findViewById(R.id.main);
         if (mainView != null) {
@@ -40,6 +46,23 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.btnCommunity).setOnClickListener(v -> loadFragment(new CommunityFragment()));
         findViewById(R.id.btnGenerate).setOnClickListener(v -> loadFragment(new GenerateFragment()));
         findViewById(R.id.btnProfile).setOnClickListener(v -> loadFragment(new ProfileFragment()));
+        
+        // Bắt sự kiện cho btnPost và btnMessage
+        View btnPost = findViewById(R.id.btnPost);
+        if (btnPost != null) {
+            btnPost.setOnClickListener(v -> loadFragment(new PostFragment()));
+        }
+        
+        View btnMessage = findViewById(R.id.btnMessage);
+        if (btnMessage != null) {
+            btnMessage.setOnClickListener(v -> loadFragment(new MessageFragment()));
+        }
+    }
+
+    public void setBottomNavVisibility(int visibility) {
+        if (bottomNav != null) {
+            bottomNav.setVisibility(visibility);
+        }
     }
 
     private void loadFragment(Fragment fragment) {

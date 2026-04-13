@@ -59,15 +59,18 @@
                 android:layout_height="48dp"
                 android:layout_gravity="center"
                 android:background="@drawable/bg_purple_button" />
+
             <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
+                android:id="@+id/btnPost"
+                android:layout_width="19dp"
+                android:layout_height="19dp"
                 android:layout_gravity="center"
                 android:src="@android:drawable/ic_menu_add"
                 app:tint="@color/white" />
         </FrameLayout>
 
         <ImageView
+            android:id="@+id/btnMessage"
             android:layout_width="0dp"
             android:layout_height="24dp"
             android:layout_weight="1"

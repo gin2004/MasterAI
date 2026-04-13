@@ -34,7 +34,7 @@ public class LoginActivity extends AppCompatActivity {
             }
 
             // Gửi dữ liệu theo đúng JSON: { "username": "...", "password": "..." }
-            User userLogin = new User(username, password);
+            User userLogin = new User(username, password, password);
             
             RetrofitClient.getApiService().login(userLogin).enqueue(new Callback<User>() {
                 @Override

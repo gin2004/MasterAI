@@ -20,10 +20,11 @@
                 android:src="@android:drawable/ic_menu_revert"
                 app:tint="@color/black" />
             <TextView
+                android:id="@+id/tvProfileUsername"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="Jay Mahlangu"
+                android:text="Username"
                 android:textStyle="bold"
                 android:textColor="@color/black"
                 android:textSize="18sp" />
@@ -42,13 +43,15 @@
                 android:gravity="center_vertical">
 
                 <com.google.android.material.imageview.ShapeableImageView
+                    android:id="@+id/ivProfileAvatar"
                     android:layout_width="80dp"
                     android:layout_height="80dp"
                     android:src="@android:drawable/ic_menu_report_image"
                     app:shapeAppearanceOverlay="@style/CircleImage"
                     android:scaleType="centerCrop"
-                    android:background="@color/gray_bg" />
-
+                    android:background="#F0F0F0" />
+                
+                <!-- ... các phần khác giữ nguyên ... -->
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -114,15 +117,17 @@
             </LinearLayout>
 
             <TextView
+                android:id="@+id/tvFullName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:text="Jay Mahlangu"
+                android:text="Full Name"
                 android:textStyle="bold"
                 android:textColor="@color/black"
                 android:textSize="16sp" />
 
-            <TextView
+            <!-- ... phần còn lại giữ nguyên ... -->
+             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="newbie, on an adventure"
@@ -150,25 +155,7 @@
                     android:text="Message"
                     style="@style/Widget.Material3.Button.OutlinedButton"
                     app:cornerRadius="12dp" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
-                    app:icon="@android:drawable/ic_menu_share"
-                    app:cornerRadius="12dp" />
             </LinearLayout>
-
-            <com.google.android.material.button.MaterialButton
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="Tip"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                app:icon="@android:drawable/ic_menu_agenda"
-                app:cornerRadius="12dp" />
-
         </LinearLayout>
 
         <com.google.android.material.tabs.TabLayout
@@ -185,14 +172,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:icon="@android:drawable/ic_dialog_dialer" />
-            <com.google.android.material.tabs.TabItem
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:icon="@android:drawable/ic_menu_myplaces" />
-            <com.google.android.material.tabs.TabItem
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:icon="@android:drawable/ic_menu_view" />
         </com.google.android.material.tabs.TabLayout>
     </com.google.android.material.appbar.AppBarLayout>
 

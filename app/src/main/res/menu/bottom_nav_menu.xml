@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/btnCommunity"
+        android:icon="@drawable/ic_nav_community"
+        android:title="Community" />
+    <item
+        android:id="@+id/btnGenerate"
+        android:icon="@drawable/ic_nav_generate"
+        android:title="Generate" />
+    <item
+        android:id="@+id/btnPost"
+        android:icon="@drawable/ic_nav_post"
+        android:title="Post" />
+    <item
+        android:id="@+id/btnMessage"
+        android:icon="@drawable/ic_nav_message"
+        android:title="Message" />
+    <item
+        android:id="@+id/btnProfile"
+        android:icon="@drawable/ic_nav_profile"
+        android:title="Profile" />
+</menu>

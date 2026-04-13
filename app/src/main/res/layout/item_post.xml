@@ -95,12 +95,13 @@
             android:orientation="horizontal"
             android:gravity="center_vertical">
 
+            <!-- Like -->
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_bottom_nav"
-                android:paddingHorizontal="8dp"
-                android:paddingVertical="4dp"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="6dp"
                 android:gravity="center_vertical">
                 <ImageView
                     android:layout_width="16dp"
@@ -108,10 +109,35 @@
                     android:src="@android:drawable/btn_star_big_on"
                     app:tint="#FF4081" />
                 <TextView
+                    android:id="@+id/tvLikeCount"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="2"
-                    android:layout_marginStart="4dp"
+                    android:layout_marginStart="6dp"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <!-- Comment -->
+            <LinearLayout
+                android:id="@+id/btnComment"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/bg_bottom_nav"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="6dp"
+                android:gravity="center_vertical">
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/ic_nav_message"
+                    app:tint="@color/gray_text" />
+                <TextView
+                    android:id="@+id/tvCommentCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="5"
+                    android:layout_marginStart="6dp"
                     android:textSize="12sp" />
             </LinearLayout>
 
@@ -121,20 +147,7 @@
                 android:layout_weight="1" />
 
             <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@android:drawable/ic_menu_agenda"
-                android:layout_marginEnd="16dp"
-                app:tint="@color/gray_text" />
-
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@android:drawable/ic_menu_send"
-                android:layout_marginEnd="16dp"
-                app:tint="@color/gray_text" />
-
-            <ImageView
+                android:id="@+id/btnShare"
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:src="@android:drawable/ic_menu_share"

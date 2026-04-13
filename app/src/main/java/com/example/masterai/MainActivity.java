@@ -15,10 +15,13 @@ import com.example.masterai.ui.comminity.CommunityFragment;
 import com.example.masterai.ui.comminity.MessageFragment;
 import com.example.masterai.ui.comminity.PostFragment;
 import com.example.masterai.ui.profile.ProfileFragment;
+import com.google.android.material.bottomnavigation.BottomNavigationItemView;
+import com.google.android.material.bottomnavigation.BottomNavigationMenuView;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity {
 
-    private View bottomNav;
+    private BottomNavigationView bottomNav;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,25 +40,51 @@ public class MainActivity extends AppCompatActivity {
             });
         }
 
-        // Set default fragment
         if (savedInstanceState == null) {
             loadFragment(new CommunityFragment());
         }
 
-        // Setup Bottom Navigation listeners
-        findViewById(R.id.btnCommunity).setOnClickListener(v -> loadFragment(new CommunityFragment()));
-        findViewById(R.id.btnGenerate).setOnClickListener(v -> loadFragment(new GenerateFragment()));
-        findViewById(R.id.btnProfile).setOnClickListener(v -> loadFragment(new ProfileFragment()));
-        
-        // Bắt sự kiện cho btnPost và btnMessage
-        View btnPost = findViewById(R.id.btnPost);
-        if (btnPost != null) {
-            btnPost.setOnClickListener(v -> loadFragment(new PostFragment()));
-        }
-        
-        View btnMessage = findViewById(R.id.btnMessage);
-        if (btnMessage != null) {
-            btnMessage.setOnClickListener(v -> loadFragment(new MessageFragment()));
+        bottomNav.setOnItemSelectedListener(item -> {
+            int itemId = item.getItemId();
+            
+            // Xử lý hiệu ứng phóng to icon
+            updateBottomNavScale(itemId);
+
+            if (itemId == R.id.btnCommunity) {
+                loadFragment(new CommunityFragment());
+                return true;
+            } else if (itemId == R.id.btnGenerate) {
+                loadFragment(new GenerateFragment());
+                return true;
+            } else if (itemId == R.id.btnPost) {
+                loadFragment(new PostFragment());
+                return true;
+            } else if (itemId == R.id.btnMessage) {
+                loadFragment(new MessageFragment());
+                return true;
+            } else if (itemId == R.id.btnProfile) {
+                loadFragment(new ProfileFragment());
+                return true;
+            }
+            return false;
+        });
+
+        // Kích hoạt hiệu ứng mặc định cho item đầu tiên
+        bottomNav.post(() -> updateBottomNavScale(R.id.btnCommunity));
+    }
+
+    private void updateBottomNavScale(int selectedItemId) {
+        BottomNavigationMenuView menuView = (BottomNavigationMenuView) bottomNav.getChildAt(0);
+        for (int i = 0; i < menuView.getChildCount(); i++) {
+            View itemView = menuView.getChildAt(i);
+            if (itemView instanceof BottomNavigationItemView) {
+                BottomNavigationItemView item = (BottomNavigationItemView) itemView;
+                if (item.getId() == selectedItemId) {
+                    item.animate().scaleX(1.2f).scaleY(1.2f).setDuration(200).start();
+                } else {
+                    item.animate().scaleX(1.0f).scaleY(1.0f).setDuration(200).start();
+                }
+            }
         }
     }
 

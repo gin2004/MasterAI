@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:paddingBottom="250dp"
     android:background="@color/white">
 
     <TextView
@@ -27,7 +28,17 @@
         android:gravity="top"
         android:background="@null"
         app:layout_constraintTop_toBottomOf="@id/tvTitle"
-        app:layout_constraintBottom_toTopOf="@id/llOptions" />
+        app:layout_constraintBottom_toTopOf="@id/ivImagePreview" />
+
+    <ImageView
+        android:id="@+id/ivImagePreview"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_margin="16dp"
+        android:scaleType="centerCrop"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/llOptions"
+        app:layout_constraintTop_toBottomOf="@id/etPostContent" />
 
     <LinearLayout
         android:id="@+id/llOptions"

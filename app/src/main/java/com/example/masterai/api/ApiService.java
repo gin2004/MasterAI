@@ -21,7 +21,7 @@ public interface ApiService {
     Call<User> register(@Body User user);
 
     // API cho Post
-    @GET("api/posts/")
+    @GET("api/posts/feed")
     Call<List<Post>> getPosts();
 
     @POST("api/posts/")

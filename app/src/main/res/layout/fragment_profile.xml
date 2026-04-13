@@ -20,10 +20,11 @@
                 android:src="@android:drawable/ic_menu_revert"
                 app:tint="@color/black" />
             <TextView
+                android:id="@+id/tvToolbarName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="Jay Mahlangu"
+                android:text="User Name"
                 android:textStyle="bold"
                 android:textColor="@color/black"
                 android:textSize="18sp" />
@@ -42,6 +43,7 @@
                 android:gravity="center_vertical">
 
                 <com.google.android.material.imageview.ShapeableImageView
+                    android:id="@+id/ivProfileImage"
                     android:layout_width="80dp"
                     android:layout_height="80dp"
                     android:src="@android:drawable/ic_menu_report_image"
@@ -56,9 +58,10 @@
                     android:gravity="center"
                     android:orientation="vertical">
                     <TextView
+                        android:id="@+id/tvPostCount"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="14"
+                        android:text="0"
                         android:textStyle="bold"
                         android:textColor="@color/black"
                         android:textSize="18sp" />
@@ -77,9 +80,10 @@
                     android:gravity="center"
                     android:orientation="vertical">
                     <TextView
+                        android:id="@+id/tvFollowerCount"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="1"
+                        android:text="0"
                         android:textStyle="bold"
                         android:textColor="@color/black"
                         android:textSize="18sp" />
@@ -98,9 +102,10 @@
                     android:gravity="center"
                     android:orientation="vertical">
                     <TextView
+                        android:id="@+id/tvFollowingCount"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="3"
+                        android:text="0"
                         android:textStyle="bold"
                         android:textColor="@color/black"
                         android:textSize="18sp" />
@@ -114,18 +119,20 @@
             </LinearLayout>
 
             <TextView
+                android:id="@+id/tvProfileName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:text="Jay Mahlangu"
+                android:text="User Name"
                 android:textStyle="bold"
                 android:textColor="@color/black"
                 android:textSize="16sp" />
 
             <TextView
+                android:id="@+id/tvProfileBio"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="newbie, on an adventure"
+                android:text="Loading bio..."
                 android:textColor="@color/gray_text" />
 
             <LinearLayout

@@ -7,13 +7,19 @@ import retrofit2.http.GET;
 import retrofit2.http.POST;
 
 public interface ApiService {
-    @GET("api/users")
+    @GET("api/users/")
     Call<List<User>> getUsers();
 
-    // Sử dụng @Body để gửi JSON object gồm username và password
-    @POST("api/users/login/")
+    @POST("api/login/")
     Call<User> login(@Body User user);
 
-    @POST("api/users/register/")
+    @POST("api/register/")
     Call<User> register(@Body User user);
+
+    // API cho Post
+    @GET("api/posts/")
+    Call<List<Post>> getPosts();
+
+    @POST("api/posts/")
+    Call<Post> createPost(@Body Post post);
 }

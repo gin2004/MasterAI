@@ -29,6 +29,9 @@ public class Post implements Serializable {
     @SerializedName("media")
     private List<Media> media;
 
+    public Post() {
+    }
+
     public Post(String userId, String content, String visibility) {
         this.userId = userId;
         this.content = content;
@@ -37,13 +40,26 @@ public class Post implements Serializable {
 
     // Getters and Setters
     public String getId() { return id; }
-    public String getUserId() { return userId; }
-    public String getContent() { return content; }
-    public String getVisibility() { return visibility; }
-    public int getLikeCount() { return likeCount; }
-    public int getCommentCount() { return commentCount; }
-    public String getCreatedAt() { return createdAt; }
-    public List<Media> getMedia() { return media; }
+    public void setId(String id) { this.id = id; }
 
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
+
+    public String getContent() { return content; }
+    public void setContent(String content) { this.content = content; }
+
+    public String getVisibility() { return visibility; }
+    public void setVisibility(String visibility) { this.visibility = visibility; }
+
+    public int getLikeCount() { return likeCount; }
+    public void setLikeCount(int likeCount) { this.likeCount = likeCount; }
+
+    public int getCommentCount() { return commentCount; }
+    public void setCommentCount(int commentCount) { this.commentCount = commentCount; }
+
+    public String getCreatedAt() { return createdAt; }
+    public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
+
+    public List<Media> getMedia() { return media; }
     public void setMedia(List<Media> media) { this.media = media; }
 }

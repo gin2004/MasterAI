@@ -4,16 +4,20 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.masterai.R;
-import com.example.masterai.model.Media;
+import com.example.masterai.api.RetrofitClient;
 import com.example.masterai.model.Post;
 import java.util.ArrayList;
 import java.util.List;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class CommunityFragment extends Fragment {
 
@@ -28,6 +32,9 @@ public class CommunityFragment extends Fragment {
         rvPosts = view.findViewById(R.id.rvPosts);
         rvPosts.setLayoutManager(new LinearLayoutManager(getContext()));
 
+        postAdapter = new PostAdapter(new ArrayList<>());
+        rvPosts.setAdapter(postAdapter);
+
         view.findViewById(R.id.btnNotification).setOnClickListener(v -> {
             getParentFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, new NotificationFragment())
@@ -35,28 +42,34 @@ public class CommunityFragment extends Fragment {
                 .commit();
         });
 
-        // Sample data for posts
-        List<Post> samplePosts = new ArrayList<>();
-        
-        Post post1 = new Post();
-        post1.setUserId("1");
-        post1.setContent("Loving the new AI image generation features! #AI #Art");
-        List<Media> media1 = new ArrayList<>();
-        Media m1 = new Media();
-        m1.setUrl("https://example.com/image1.jpg");
-        media1.add(m1);
-        post1.setMedia(media1);
-        
-        Post post2 = new Post();
-        post2.setUserId("2");
-        post2.setContent("Check out this amazing landscape I generated today.");
-        
-        samplePosts.add(post1);
-        samplePosts.add(post2);
-
-        postAdapter = new PostAdapter(samplePosts);
-        rvPosts.setAdapter(postAdapter);
+        // Tải danh sách bài viết từ API
+        fetchPosts();
 
         return view;
+    }
+
+    private void fetchPosts() {
+        RetrofitClient.getApiService().getPosts().enqueue(new Callback<List<Post>>() {
+            @Override
+            public void onResponse(Call<List<Post>> call, Response<List<Post>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    postAdapter.setPosts(response.body());
+                } else {
+                    Toast.makeText(getContext(), "Không thể tải bài viết", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Post>> call, Throwable t) {
+                Toast.makeText(getContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Cập nhật lại danh sách mỗi khi fragment hiển thị lại (ví dụ sau khi đăng bài xong quay lại)
+        fetchPosts();
     }
 }

@@ -1,4 +1,4 @@
-package com.example.masterai;
+package com.example.masterai.ui.profile;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -10,6 +10,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import com.bumptech.glide.Glide;
+import com.example.masterai.R;
+import com.example.masterai.utils.UserManager;
+import com.example.masterai.model.User;
 
 public class ProfileFragment extends Fragment {
 
@@ -24,9 +27,9 @@ public class ProfileFragment extends Fragment {
         ivProfileAvatar = view.findViewById(R.id.ivProfileAvatar);
         tvProfileUsername = view.findViewById(R.id.tvProfileUsername);
 
-        // Giả sử bạn nhận được object User sau khi đăng nhập thành công
-        // Bạn có thể lấy từ Singleton, SharedPreferences hoặc Bundle
-        // loadUserData(currentUser);
+        // Lấy thông tin user hiện tại từ UserManager
+        User currentUser = UserManager.getInstance().getUser();
+        loadUserData(currentUser);
 
         return view;
     }
@@ -36,9 +39,9 @@ public class ProfileFragment extends Fragment {
             tvProfileUsername.setText(user.getUsername());
             
             // Load ảnh bằng Glide
-            if (getContext() != null && user.getProfileImage() != null) {
+            if (getContext() != null && user.getAvatarUrl() != null) {
                 Glide.with(this)
-                    .load(user.getProfileImage()) // URL từ backend
+                    .load(user.getAvatarUrl()) // URL từ backend
                     .placeholder(android.R.drawable.ic_menu_report_image)
                     .error(android.R.drawable.stat_notify_error)
                     .circleCrop()

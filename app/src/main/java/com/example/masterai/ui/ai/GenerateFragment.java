@@ -1,4 +1,4 @@
-package com.example.masterai;
+package com.example.masterai.ui.ai;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -8,10 +8,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-public class CommunityFragment extends Fragment {
+import com.example.masterai.R;
+
+public class GenerateFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_community, container, false);
+        return inflater.inflate(R.layout.fragment_generate, container, false);
     }
 }

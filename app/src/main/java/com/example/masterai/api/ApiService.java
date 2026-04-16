@@ -9,8 +9,11 @@ import java.util.List;
 import java.util.Map;
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.DELETE;
 import retrofit2.http.GET;
+import retrofit2.http.PATCH;
 import retrofit2.http.POST;
+import retrofit2.http.PUT;
 import retrofit2.http.Path;
 
 public interface ApiService {
@@ -41,4 +44,10 @@ public interface ApiService {
 
     @POST("api/posts/{id}/comment/")
     Call<Comment> addComment(@Path("id") String postId, @Body Map<String, Object> body);
+
+    @DELETE("api/posts/{id}/")
+    Call<Map<String, String>> deletePost(@Path("id") String postId);
+
+    @PATCH("api/posts/{id}/update/")
+    Call<Post> updatePost(@Path("id") String postId, @Body Map<String, Object> body);
 }

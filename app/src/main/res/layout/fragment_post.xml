@@ -3,7 +3,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingBottom="250dp"
     android:background="@color/white">
 
     <TextView
@@ -27,18 +26,21 @@
         android:hint="What's on your mind?"
         android:gravity="top"
         android:background="@null"
+        android:inputType="textMultiLine"
         app:layout_constraintTop_toBottomOf="@id/tvTitle"
-        app:layout_constraintBottom_toTopOf="@id/ivImagePreview" />
+        app:layout_constraintBottom_toTopOf="@id/rvImages" />
 
-    <ImageView
-        android:id="@+id/ivImagePreview"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvImages"
         android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:layout_margin="16dp"
-        android:scaleType="centerCrop"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="8dp"
+        android:orientation="horizontal"
         android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@id/llOptions"
-        app:layout_constraintTop_toBottomOf="@id/etPostContent" />
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintBottom_toTopOf="@id/llOptions" />
 
     <LinearLayout
         android:id="@+id/llOptions"
@@ -46,44 +48,49 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:padding="16dp"
-        app:layout_constraintBottom_toTopOf="@id/btnSubmitPost">
+        android:layout_marginBottom="80dp"
+        app:layout_constraintBottom_toBottomOf="parent">
 
         <ImageButton
             android:id="@+id/btnUploadImage"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:src="@android:drawable/ic_menu_gallery"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:padding="8dp" />
+            app:tint="@color/gray_text" />
 
         <ImageButton
             android:id="@+id/btnUploadAvatar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:layout_marginStart="16dp"
             android:src="@android:drawable/ic_menu_camera"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:padding="8dp" />
+            app:tint="@color/gray_text" />
 
         <ImageButton
             android:id="@+id/btnVoice"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:layout_marginStart="16dp"
             android:src="@android:drawable/ic_btn_speak_now"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:padding="8dp" />
+            app:tint="@color/gray_text" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSubmitPost"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Post"
+            android:textAllCaps="false"
+            app:cornerRadius="20dp"
+            android:backgroundTint="@color/purple_primary" />
 
     </LinearLayout>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnSubmitPost"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:text="Post"
-        app:cornerRadius="12dp"
-        android:backgroundTint="@color/purple_primary"
-        app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

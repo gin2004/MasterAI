@@ -8,6 +8,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -55,7 +56,17 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         holder.tvLikeCount.setText(String.valueOf(post.getLikeCount()));
         holder.tvCommentCount.setText(String.valueOf(post.getCommentCount()));
 
-        loadUserInfo(holder, post.getUserId());
+        User currentUser = UserManager.getInstance().getUser();
+        boolean isMyPost = currentUser != null && currentUser.getId().equals(post.getUserId());
+
+        if (isMyPost) {
+            holder.llMyPostActions.setVisibility(View.VISIBLE);
+            holder.btnFollow.setVisibility(View.GONE);
+        } else {
+            holder.llMyPostActions.setVisibility(View.GONE);
+        }
+
+        loadUserInfo(holder, post.getUserId(), isMyPost);
         setupMediaRecyclerView(holder, post);
 
         holder.btnLike.setOnClickListener(v -> toggleLike(post, holder));
@@ -63,20 +74,60 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         holder.btnComment.setOnClickListener(v -> {
             AppCompatActivity activity = (AppCompatActivity) v.getContext();
             CommentFragment commentFragment = new CommentFragment();
-            
-            // Truyền postId sang Fragment bình luận
             Bundle bundle = new Bundle();
             bundle.putString("post_id", post.getId());
             commentFragment.setArguments(bundle);
-
             activity.getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, commentFragment)
                 .addToBackStack(null)
                 .commit();
         });
+
+        holder.btnDelete.setOnClickListener(v -> {
+            new AlertDialog.Builder(v.getContext())
+                .setTitle("Xóa bài đăng")
+                .setMessage("Bạn có chắc chắn muốn xóa bài đăng này không?")
+                .setPositiveButton("Xóa", (dialog, which) -> {
+                    int currentPosition = holder.getAdapterPosition();
+                    if (currentPosition != RecyclerView.NO_POSITION) {
+                        deletePost(post.getId(), currentPosition, v);
+                    }
+                })
+                .setNegativeButton("Hủy", null)
+                .show();
+        });
+
+        holder.btnEdit.setOnClickListener(v -> {
+            AppCompatActivity activity = (AppCompatActivity) v.getContext();
+            EditPostFragment editPostFragment = EditPostFragment.newInstance(post);
+            activity.getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, editPostFragment)
+                .addToBackStack(null)
+                .commit();
+        });
     }
 
-    // ... (Giữ nguyên các hàm toggleLike, loadUserInfo, setupMediaRecyclerView như trước)
+    private void deletePost(String postId, int position, View view) {
+        RetrofitClient.getApiService().deletePost(postId).enqueue(new Callback<Map<String, String>>() {
+            @Override
+            public void onResponse(Call<Map<String, String>> call, Response<Map<String, String>> response) {
+                if (response.isSuccessful()) {
+                    posts.remove(position);
+                    notifyItemRemoved(position);
+                    notifyItemRangeChanged(position, posts.size());
+                    Toast.makeText(view.getContext(), "Post deleted", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(view.getContext(), "Failed to delete post", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Map<String, String>> call, Throwable t) {
+                Toast.makeText(view.getContext(), "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
     private void toggleLike(Post post, PostViewHolder holder) {
         User currentUser = UserManager.getInstance().getUser();
         if (currentUser == null) return;
@@ -103,9 +154,9 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         });
     }
 
-    private void loadUserInfo(PostViewHolder holder, String userId) {
+    private void loadUserInfo(PostViewHolder holder, String userId, boolean isMyPost) {
         if (userCache.containsKey(userId)) {
-            displayUserInfo(holder, userCache.get(userId));
+            displayUserInfo(holder, userCache.get(userId), isMyPost);
         } else {
             RetrofitClient.getApiService().getUserById(userId).enqueue(new Callback<User>() {
                 @Override
@@ -113,7 +164,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
                     if (response.isSuccessful() && response.body() != null) {
                         User user = response.body();
                         userCache.put(userId, user);
-                        displayUserInfo(holder, user);
+                        displayUserInfo(holder, user, isMyPost);
                     }
                 }
                 @Override
@@ -122,10 +173,14 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         }
     }
 
-    private void displayUserInfo(PostViewHolder holder, User user) {
+    private void displayUserInfo(PostViewHolder holder, User user, boolean isMyPost) {
         holder.tvName.setText(user.getUsername());
         if (user.getAvatarUrl() != null && !user.getAvatarUrl().isEmpty()) {
             Glide.with(holder.itemView.getContext()).load(user.getAvatarUrl()).circleCrop().into(holder.ivAvatar);
+        }
+
+        if (!isMyPost) {
+            holder.btnFollow.setVisibility(user.isFollowed() ? View.GONE : View.VISIBLE);
         }
     }
 
@@ -144,10 +199,11 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
     public int getItemCount() { return posts.size(); }
 
     static class PostViewHolder extends RecyclerView.ViewHolder {
-        ImageView ivAvatar, ivLike;
+        ImageView ivAvatar, ivLike, btnEdit, btnDelete;
         TextView tvName, tvTime, tvContent, tvLikeCount, tvCommentCount;
         RecyclerView rvPostMedia;
-        View btnComment, btnLike;
+        View btnComment, btnLike, btnFollow, llMyPostActions;
+
         public PostViewHolder(@NonNull View itemView) {
             super(itemView);
             ivAvatar = itemView.findViewById(R.id.ivAvatar);
@@ -160,6 +216,10 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             rvPostMedia = itemView.findViewById(R.id.rvPostMedia);
             btnComment = itemView.findViewById(R.id.btnComment);
             btnLike = itemView.findViewById(R.id.btnLike);
+            btnFollow = itemView.findViewById(R.id.btnFollow);
+            llMyPostActions = itemView.findViewById(R.id.llMyPostActions);
+            btnEdit = itemView.findViewById(R.id.btnEdit);
+            btnDelete = itemView.findViewById(R.id.btnDelete);
         }
     }
 }

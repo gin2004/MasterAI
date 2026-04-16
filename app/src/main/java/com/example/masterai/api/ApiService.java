@@ -1,10 +1,12 @@
 package com.example.masterai.api;
 
+import com.example.masterai.model.Comment;
 import com.example.masterai.model.LoginResponse;
 import com.example.masterai.model.Post;
 import com.example.masterai.model.User;
 
 import java.util.List;
+import java.util.Map;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
@@ -30,4 +32,13 @@ public interface ApiService {
 
     @POST("api/posts/")
     Call<Post> createPost(@Body Post post);
+
+    @POST("api/posts/{id}/like/")
+    Call<Map<String, String>> toggleLike(@Path("id") String postId, @Body Map<String, String> body);
+
+    @GET("api/posts/{id}/comments/")
+    Call<List<Comment>> getComments(@Path("id") String postId);
+
+    @POST("api/posts/{id}/comment/")
+    Call<Comment> addComment(@Path("id") String postId, @Body Map<String, Object> body);
 }

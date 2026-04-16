@@ -98,6 +98,7 @@
             android:gravity="center_vertical">
 
             <LinearLayout
+                android:id="@+id/btnLike"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_bottom_nav"
@@ -105,10 +106,11 @@
                 android:paddingVertical="6dp"
                 android:gravity="center_vertical">
                 <ImageView
+                    android:id="@+id/ivLike"
                     android:layout_width="16dp"
                     android:layout_height="16dp"
                     android:src="@android:drawable/btn_star_big_on"
-                    app:tint="#FF4081" />
+                    app:tint="@color/gray_text" />
                 <TextView
                     android:id="@+id/tvLikeCount"
                     android:layout_width="wrap_content"

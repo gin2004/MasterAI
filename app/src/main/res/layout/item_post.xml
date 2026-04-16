@@ -15,6 +15,7 @@
         android:orientation="vertical"
         android:padding="16dp">
 
+        <!-- Header: Avatar, Name, Follow -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -75,19 +76,20 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:text="This is cool"
+            android:text="Post content goes here"
             android:textColor="@color/black" />
 
-        <com.google.android.material.imageview.ShapeableImageView
-            android:id="@+id/ivPostImage"
+        <!-- Media RecyclerView (Images and Voices) -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvPostMedia"
             android:layout_width="match_parent"
-            android:layout_height="300dp"
+            android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:scaleType="centerCrop"
-            android:src="@android:drawable/ic_menu_gallery"
-            app:shapeAppearanceOverlay="@style/RoundedImage"
-            android:background="@color/gray_bg" />
+            android:orientation="horizontal"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            android:visibility="gone" />
 
+        <!-- Bottom Actions: Like, Comment, Share -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -95,7 +97,6 @@
             android:orientation="horizontal"
             android:gravity="center_vertical">
 
-            <!-- Like -->
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -117,7 +118,6 @@
                     android:textSize="12sp" />
             </LinearLayout>
 
-            <!-- Comment -->
             <LinearLayout
                 android:id="@+id/btnComment"
                 android:layout_width="wrap_content"

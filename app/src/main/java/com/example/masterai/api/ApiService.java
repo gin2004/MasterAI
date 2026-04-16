@@ -9,6 +9,7 @@ import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
+import retrofit2.http.Path;
 
 public interface ApiService {
     @GET("api/users/")
@@ -20,8 +21,11 @@ public interface ApiService {
     @POST("api/users/register/")
     Call<User> register(@Body User user);
 
+    @GET("api/users/{id}/")
+    Call<User> getUserById(@Path("id") String id);
+
     // API cho Post
-    @GET("api/posts/feed")
+    @GET("api/posts/feed/")
     Call<List<Post>> getPosts();
 
     @POST("api/posts/")

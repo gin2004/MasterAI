@@ -94,6 +94,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public void navigateToCommunity() {
+        bottomNav.setSelectedItemId(R.id.btnCommunity);
+    }
+
     private void loadFragment(Fragment fragment) {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.fragment_container, fragment);

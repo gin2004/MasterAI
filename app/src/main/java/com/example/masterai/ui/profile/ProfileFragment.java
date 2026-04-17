@@ -28,7 +28,7 @@ public class ProfileFragment extends Fragment {
         tvProfileUsername = view.findViewById(R.id.tvProfileUsername);
 
         // Lấy thông tin user hiện tại từ UserManager
-        User currentUser = UserManager.getInstance().getUser();
+        User currentUser = UserManager.getInstance(requireContext()).getUser();
         loadUserData(currentUser);
 
         return view;

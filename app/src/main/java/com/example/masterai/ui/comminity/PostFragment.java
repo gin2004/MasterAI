@@ -106,7 +106,7 @@ public class PostFragment extends Fragment {
             return;
         }
 
-        User currentUser = UserManager.getInstance().getUser();
+        User currentUser = UserManager.getInstance(requireContext()).getUser();
         if (currentUser == null) {
             Toast.makeText(getContext(), "Bạn cần đăng nhập để đăng bài", Toast.LENGTH_SHORT).show();
             return;

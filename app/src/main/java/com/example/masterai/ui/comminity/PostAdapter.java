@@ -56,7 +56,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         holder.tvLikeCount.setText(String.valueOf(post.getLikeCount()));
         holder.tvCommentCount.setText(String.valueOf(post.getCommentCount()));
 
-        User currentUser = UserManager.getInstance().getUser();
+        User currentUser = UserManager.getInstance(holder.itemView.getContext()).getUser();
         boolean isMyPost = currentUser != null && currentUser.getId().equals(post.getUserId());
 
         if (isMyPost) {
@@ -129,7 +129,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
     }
 
     private void toggleLike(Post post, PostViewHolder holder) {
-        User currentUser = UserManager.getInstance().getUser();
+        User currentUser = UserManager.getInstance(holder.itemView.getContext()).getUser();
         if (currentUser == null) return;
         Map<String, String> body = new HashMap<>();
         body.put("user_id", currentUser.getId());

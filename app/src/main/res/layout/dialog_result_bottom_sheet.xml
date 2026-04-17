@@ -5,23 +5,22 @@
     android:layout_height="match_parent"
     android:background="@color/white"
     android:orientation="vertical"
-    android:padding="16dp"
+    android:paddingHorizontal="16dp"
     >
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:paddingHorizontal="16dp">
+        android:layout_height="?attr/actionBarSize">
 
         <ImageView
             android:id="@+id/btnBack"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:padding="8dp"
-            android:src="@android:drawable/ic_menu_revert"
-            app:tint="#333333" />
+            android:src="@drawable/ic_back"
+            />
 
         <TextView
             android:layout_width="wrap_content"
@@ -85,7 +84,7 @@
         </LinearLayout>
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnGenerate"
+            android:id="@+id/btnSaveAsset"
             android:layout_width="0dp"
             android:layout_height="56dp"
             android:layout_marginStart="12dp"

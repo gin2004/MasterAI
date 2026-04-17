@@ -14,6 +14,7 @@ import java.util.List;
 
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.Field;
@@ -73,10 +74,10 @@ public interface ApiService {
             @Query("type") String type
     );
 
-    // 4. Thêm vào Asset (Yêu thích)
+    // 4. Thêm vào Asset (Tài nguyên)
     @FormUrlEncoded
     @POST("api/ai/add-asset/")
-    Call<ImageResponse> addAsset(
+    Call<ResponseBody> addAsset(
             @Field("user_id") String userId,
             @Field("generation_id") String generationId
     );

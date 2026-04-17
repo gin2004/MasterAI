@@ -33,11 +33,16 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -51,6 +56,8 @@ public class ImageFragment extends Fragment {
     private String imageLink;
     private GenerationAdapter generationAdapter;
     private AssetAdapter assetAdapter;
+    String user_id = "c7f8bca5-6201-41ad-911b-e47636f85d27";
+    private ImageResponse imageResponse;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -200,12 +207,51 @@ public class ImageFragment extends Fragment {
 
         ImageView imgResult = view.findViewById(R.id.imgResult);
         ImageView btnBack = view.findViewById(R.id.btnBack);
+        MaterialButton btnSaveAsset = view.findViewById(R.id.btnSaveAsset);
 
         Glide.with(this).load(imageUrl).into(imgResult);
 
         btnBack.setOnClickListener(v -> resultDialog.dismiss());
+        //lưu vào asset
+        btnSaveAsset.setOnClickListener(v->{
+            saveAsset();
+        });
+        
 
         resultDialog.show();
+    }
+
+    private void saveAsset() {
+
+        if(imageLink!=null && !imageLink.isEmpty() && imageResponse!= null){
+            RetrofitClient.getApiService().addAsset(user_id,imageResponse.generation_id).enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    if(response.isSuccessful()){
+                        String json = null; // Lấy chuỗi JSON thô
+                        try {
+                            json = response.body().string();
+                            // Dùng JSONObject để kiểm tra một trường đặc trưng nào đó
+                            JSONObject jsonObject = new JSONObject(json);
+                            if(jsonObject.has("message")){
+                                Toast.makeText(requireContext(), jsonObject.optString("message"), Toast.LENGTH_SHORT).show();
+                            }
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        } catch (JSONException e) {
+                            throw new RuntimeException(e);
+                        }
+
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ResponseBody> call, Throwable t) {
+                    Toast.makeText(requireContext(), "Không thể thêm", Toast.LENGTH_SHORT).show();
+
+                }
+            });
+        }
     }
 
     private void startWorkflow() {
@@ -224,8 +270,6 @@ public class ImageFragment extends Fragment {
         }
         // lấy tỉ lệ
         String ratio= binding.spinnerSelectModel.getSelectedItem().toString();
-        // lấy user id
-        String user_id = "c7f8bca5-6201-41ad-911b-e47636f85d27";
 
         RequestBody rbPrompt = RequestBody.create(MediaType.parse("text/plain"), prompt);
         RequestBody rbRatio = RequestBody.create(MediaType.parse("text/plain"), ratio);
@@ -243,20 +287,15 @@ public class ImageFragment extends Fragment {
 
                         if (response.isSuccessful() && response.body() != null) {
                             ImageResponse data = response.body();
-
-                            // In ra Logcat để xem Gson có đọc được dữ liệu không
-                            Log.d("DEBUG_API", "Success flag: " + data.success + " | URL: " + data.media_url);
-
+                            imageResponse = data;
                             if (data.media_url != null && !data.media_url.isEmpty()) {
                                 imageLink = data.media_url;
                                 showResultBottomSheet(data.media_url);
                             } else {
-                                showErrorInBottomSheet("Ảnh đã tạo nhưng app không đọc được Link URL (Biến bị null).");
+                                showErrorInBottomSheet("Ảnh đã tạo nhưng app không đọc được");
                             }
                         } else {
                             try {
-                                String err = response.errorBody() != null ? response.errorBody().string() : "Lỗi không xác định";
-                                Log.e("DEBUG_API", "HTTP Error: " + response.code() + " - " + err);
                                 showErrorInBottomSheet("Lỗi xử lý từ server: " + response.code());
                             } catch (Exception e) {
                                 e.printStackTrace();
@@ -269,9 +308,6 @@ public class ImageFragment extends Fragment {
                         if (loadingDialog != null && loadingDialog.isShowing()) {
                             loadingDialog.dismiss();
                         }
-
-                        // Đây là dòng quan trọng nhất để xem lỗi mạng hay lỗi JSON
-                        Log.e("DEBUG_API", "Retrofit Failure: " + t.getMessage());
                         showErrorInBottomSheet("Lỗi kết nối/Dữ liệu: " + t.getMessage());
                     }
                 });

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white">
@@ -11,157 +12,64 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- Category Tabs -->
+        <!-- Tab Layout -->
         <HorizontalScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:scrollbars="none">
+
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:paddingBottom="12dp">
 
                 <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnTabImage"
+                    style="@style/Widget.Material3.Button"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Image"
+                    android:layout_height="48dp"
+                    android:text="Tạo ảnh"
+                    android:textAllCaps="false"
+                    android:textColor="@color/white"
+                    app:backgroundTint="#A066FF"
+                    app:cornerRadius="24dp"
                     app:icon="@android:drawable/ic_menu_gallery"
-                    app:cornerRadius="20dp"
-                    android:backgroundTint="@color/purple_primary" />
+                    app:iconSize="18dp" />
 
                 <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnTabAvatar"
+                    style="@style/Widget.Material3.Button.TonalButton"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_height="48dp"
                     android:layout_marginStart="8dp"
-                    android:text="Video"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
-                    app:icon="@android:drawable/ic_menu_slideshow"
-                    app:cornerRadius="20dp" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:text="Avatar"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:text="Tạo avatar"
+                    android:textAllCaps="false"
+                    android:textColor="#757575"
+                    app:backgroundTint="#F5F5F5"
+                    app:cornerRadius="24dp"
                     app:icon="@android:drawable/ic_menu_myplaces"
-                    app:cornerRadius="20dp" />
+                    app:iconSize="18dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnTabVoice"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="8dp"
+                    android:text="Tạo giọng nói"
+                    android:textAllCaps="false"
+                    android:textColor="#757575"
+                    app:backgroundTint="#F5F5F5"
+                    app:cornerRadius="24dp"
+                    app:icon="@android:drawable/ic_btn_speak_now"
+                    app:iconSize="18dp" />
             </LinearLayout>
         </HorizontalScrollView>
 
-        <!-- Prompt Card -->
-        <com.google.android.material.card.MaterialCardView
+        <FrameLayout
+            android:id="@+id/fragmentContainer"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            app:cardCornerRadius="24dp"
-            app:strokeWidth="1dp"
-            app:strokeColor="@color/purple_light"
-            app:cardElevation="0dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="end">
-                    <com.google.android.material.button.MaterialButton
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Enhance"
-                        style="@style/Widget.Material3.Button.TextButton"
-                        android:textSize="12sp"
-                        app:icon="@android:drawable/ic_menu_manage" />
-                </LinearLayout>
-
-                <EditText
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:minLines="5"
-                    android:gravity="top"
-                    android:background="@null"
-                    android:hint="Your Prompt..."
-                    android:text="Bird's eye aerial of a brutalist concrete cathedral reclaimed by a lush..."
-                    android:textSize="14sp" />
-
-                <!-- Settings Row -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:orientation="horizontal">
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Model" android:textSize="12sp" />
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Nano Bana..." android:textStyle="bold" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Aspect Ratio" android:textSize="12sp" />
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="1:1" android:textStyle="bold" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Resolution" android:textSize="12sp" />
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="1K" android:textStyle="bold" />
-                    </LinearLayout>
-                </LinearLayout>
-
-                <com.google.android.material.button.MaterialButton
-                    android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:layout_marginTop="24dp"
-                    android:text="Generate"
-                    app:cornerRadius="16dp"
-                    android:backgroundTint="@color/purple_primary"
-                    app:icon="@android:drawable/ic_menu_send" />
-
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- My Assets -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="My Assets"
-            android:textStyle="bold"
-            android:textSize="18sp"
-            android:textColor="@color/black" />
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvAssets"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:orientation="horizontal"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
-
-        <!-- My Generations -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="My Generations"
-            android:textStyle="bold"
-            android:textSize="18sp"
-            android:textColor="@color/black" />
-
+            android:layout_height="wrap_content"/>
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

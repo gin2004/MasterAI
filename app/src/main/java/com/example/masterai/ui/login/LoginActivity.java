@@ -22,6 +22,14 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Kiểm tra trạng thái đăng nhập trước khi set content view
+        if (UserManager.getInstance(this).isLoggedIn()) {
+            startActivity(new Intent(this, MainActivity.class));
+            finish();
+            return;
+        }
+
         setContentView(R.layout.activity_login);
 
         TextInputEditText etUsername = findViewById(R.id.etEmail); 
@@ -46,8 +54,8 @@ public class LoginActivity extends AppCompatActivity {
                         // Lấy object User từ trong LoginResponse
                         User user = response.body().getUser();
                         
-                        // Lưu User vào Singleton để dùng ở các Fragment
-                        UserManager.getInstance().setUser(user);
+                        // Lưu User và trạng thái đăng nhập vào SharedPreferences
+                        UserManager.getInstance(LoginActivity.this).setUser(user);
                         
                         Toast.makeText(LoginActivity.this, response.body().getMessage(), Toast.LENGTH_SHORT).show();
                         startActivity(new Intent(LoginActivity.this, MainActivity.class));

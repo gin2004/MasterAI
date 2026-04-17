@@ -3,31 +3,57 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white">
+    android:background="@color/white"
+    android:clickable="true"
+    android:focusable="true">
+
+    <ImageButton
+        android:id="@+id/btnBack"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@android:drawable/ic_menu_revert"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
         android:id="@+id/tvTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Create Post"
-        android:textSize="28sp"
+        android:text="Sửa bài đăng"
+        android:textSize="20sp"
         android:textStyle="bold"
         android:textColor="@color/black"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintTop_toTopOf="@id/btnBack"
+        app:layout_constraintBottom_toBottomOf="@id/btnBack"
+        app:layout_constraintStart_toEndOf="@id/btnBack" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnUpdatePost"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Lưu"
+        android:textAllCaps="false"
+        android:layout_marginEnd="16dp"
+        app:cornerRadius="20dp"
+        android:backgroundTint="@color/purple_primary"
+        app:layout_constraintTop_toTopOf="@id/tvTitle"
+        app:layout_constraintBottom_toBottomOf="@id/tvTitle"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <EditText
         android:id="@+id/etPostContent"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_margin="16dp"
-        android:hint="What's on your mind?"
+        android:hint="Nội dung bài đăng..."
         android:gravity="top"
         android:background="@null"
         android:inputType="textMultiLine"
-        app:layout_constraintTop_toBottomOf="@id/tvTitle"
+        app:layout_constraintTop_toBottomOf="@id/btnBack"
         app:layout_constraintBottom_toTopOf="@id/rvImages" />
 
     <androidx.recyclerview.widget.RecyclerView
@@ -38,7 +64,6 @@
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="8dp"
         android:orientation="horizontal"
-        android:visibility="gone"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintBottom_toTopOf="@id/llOptions" />
 
@@ -48,7 +73,6 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:padding="16dp"
-        android:layout_marginBottom="80dp"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <ImageButton
@@ -59,37 +83,10 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             app:tint="@color/gray_text" />
 
-        <ImageButton
-            android:id="@+id/btnUploadAvatar"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginStart="16dp"
-            android:src="@android:drawable/ic_menu_camera"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            app:tint="@color/gray_text" />
-
-        <ImageButton
-            android:id="@+id/btnVoice"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginStart="16dp"
-            android:src="@android:drawable/ic_btn_speak_now"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            app:tint="@color/gray_text" />
-
         <View
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_weight="1" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnSubmitPost"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Post"
-            android:textAllCaps="false"
-            app:cornerRadius="20dp"
-            android:backgroundTint="@color/purple_primary" />
 
     </LinearLayout>
 

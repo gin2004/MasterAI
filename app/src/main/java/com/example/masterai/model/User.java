@@ -19,6 +19,9 @@ public class User implements Serializable {
     @SerializedName("avatar_url")
     private String avatarUrl;
 
+    @SerializedName("is_followed")
+    private boolean isFollowed; // Trạng thái đã follow hay chưa
+
     @SerializedName("bio")
     private String bio;
 
@@ -30,6 +33,9 @@ public class User implements Serializable {
 
     @SerializedName("following_count")
     private int followingCount;
+
+    public User() {
+    }
 
     public User(String username, String password) {
         this.username = username;
@@ -47,8 +53,6 @@ public class User implements Serializable {
     public String getUsername() { return username; }
     public String getEmail() { return email; }
     public String getAvatarUrl() { return avatarUrl; }
-    public String getBio() { return bio; }
-    public int getPostCount() { return postCount; }
-    public int getFollowerCount() { return followerCount; }
-    public int getFollowingCount() { return followingCount; }
+    public boolean isFollowed() { return isFollowed; }
+    public void setFollowed(boolean followed) { isFollowed = followed; }
 }

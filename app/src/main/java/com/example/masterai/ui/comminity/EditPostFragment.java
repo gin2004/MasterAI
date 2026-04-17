@@ -24,23 +24,32 @@ import com.example.masterai.R;
 import com.example.masterai.api.RetrofitClient;
 import com.example.masterai.model.Media;
 import com.example.masterai.model.Post;
-import com.example.masterai.model.User;
-import com.example.masterai.utils.UserManager;
-import com.google.android.material.button.MaterialButton;
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class PostFragment extends Fragment {
+public class EditPostFragment extends Fragment {
 
     private EditText etPostContent;
-    private MaterialButton btnSubmitPost;
-    private ImageButton btnUploadImage;
+    private View btnUpdatePost;
+    private ImageButton btnUploadImage, btnBack;
     private RecyclerView rvImages;
     private ImagePreviewAdapter imagePreviewAdapter;
     private List<Uri> selectedImageUris = new ArrayList<>();
+    private Post postToEdit;
+
+    public static EditPostFragment newInstance(Post post) {
+        EditPostFragment fragment = new EditPostFragment();
+        Bundle args = new Bundle();
+        args.putSerializable("post", post);
+        fragment.setArguments(args);
+        return fragment;
+    }
 
     private final ActivityResultLauncher<Intent> pickImageLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -54,32 +63,64 @@ public class PostFragment extends Fragment {
                     } else if (result.getData().getData() != null) {
                         selectedImageUris.add(result.getData().getData());
                     }
-                    
-                    // Cập nhật giao diện sau khi chọn ảnh
                     updateImagesVisibility();
                 }
             }
     );
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            postToEdit = (Post) getArguments().getSerializable("post");
+        }
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_post, container, false);
+        View view = inflater.inflate(R.layout.fragment_edit_post, container, false);
 
         etPostContent = view.findViewById(R.id.etPostContent);
-        btnSubmitPost = view.findViewById(R.id.btnSubmitPost);
+        btnUpdatePost = view.findViewById(R.id.btnUpdatePost);
         btnUploadImage = view.findViewById(R.id.btnUploadImage);
+        btnBack = view.findViewById(R.id.btnBack);
         rvImages = view.findViewById(R.id.rvImages);
 
-        // Thiết lập RecyclerView cho ảnh preview
+        if (postToEdit != null) {
+            etPostContent.setText(postToEdit.getContent());
+            if (postToEdit.getMedia() != null) {
+                for (Media m : postToEdit.getMedia()) {
+                    selectedImageUris.add(Uri.parse(m.getUrl()));
+                }
+            }
+        }
+
         rvImages.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
         imagePreviewAdapter = new ImagePreviewAdapter(selectedImageUris);
         rvImages.setAdapter(imagePreviewAdapter);
 
         btnUploadImage.setOnClickListener(v -> openGallery());
-        btnSubmitPost.setOnClickListener(v -> createPost());
+        btnUpdatePost.setOnClickListener(v -> updatePost());
+        btnBack.setOnClickListener(v -> getParentFragmentManager().popBackStack());
+
+        updateImagesVisibility();
+
+        // Ẩn BottomNavigationView
+        if (getActivity() instanceof MainActivity) {
+            ((MainActivity) getActivity()).setBottomNavVisibility(View.GONE);
+        }
 
         return view;
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        // Hiện lại BottomNavigationView khi thoát khỏi fragment này
+        if (getActivity() instanceof MainActivity) {
+            ((MainActivity) getActivity()).setBottomNavVisibility(View.VISIBLE);
+        }
     }
 
     private void openGallery() {
@@ -98,7 +139,7 @@ public class PostFragment extends Fragment {
         }
     }
 
-    private void createPost() {
+    private void updatePost() {
         String content = etPostContent.getText().toString().trim();
 
         if (TextUtils.isEmpty(content) && selectedImageUris.isEmpty()) {
@@ -106,40 +147,27 @@ public class PostFragment extends Fragment {
             return;
         }
 
-        User currentUser = UserManager.getInstance(requireContext()).getUser();
-        if (currentUser == null) {
-            Toast.makeText(getContext(), "Bạn cần đăng nhập để đăng bài", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        Map<String, Object> body = new HashMap<>();
+        body.put("content", content);
 
-        Post post = new Post();
-        post.setUserId(currentUser.getId());
-        post.setContent(content);
-        post.setVisibility("public");
-
-        // Chuyển đổi danh sách Uri thành danh sách Media
-        List<Media> mediaList = new ArrayList<>();
+        List<Map<String, String>> mediaData = new ArrayList<>();
         for (Uri uri : selectedImageUris) {
-            Media media = new Media();
-            // Trong thực tế, bạn cần upload file này lên server để lấy URL thực.
-            // Hiện tại chúng ta gửi String Uri để demo theo model hiện tại.
-            media.setUrl(uri.toString()); 
-            media.setMediaType("image");
-            media.setSource("upload");
-            mediaList.add(media);
+            Map<String, String> m = new HashMap<>();
+            m.put("url", uri.toString());
+            m.put("media_type", "image");
+            m.put("source", "upload");
+            mediaData.add(m);
         }
-        post.setMedia(mediaList);
+        body.put("media", mediaData);
 
-        RetrofitClient.getApiService().createPost(post).enqueue(new Callback<Post>() {
+        RetrofitClient.getApiService().updatePost(postToEdit.getId(), body).enqueue(new Callback<Post>() {
             @Override
             public void onResponse(Call<Post> call, Response<Post> response) {
                 if (response.isSuccessful()) {
-                    Toast.makeText(getContext(), "Đăng bài thành công!", Toast.LENGTH_SHORT).show();
-                    if (getActivity() instanceof MainActivity) {
-                        ((MainActivity) getActivity()).navigateToCommunity();
-                    }
+                    Toast.makeText(getContext(), "Cập nhật thành công!", Toast.LENGTH_SHORT).show();
+                    getParentFragmentManager().popBackStack();
                 } else {
-                    Toast.makeText(getContext(), "Lỗi server: " + response.code(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Lỗi: " + response.code(), Toast.LENGTH_SHORT).show();
                 }
             }
 

@@ -5,6 +5,7 @@ import com.example.masterai.model.AssetResponse;
 import com.example.masterai.model.Generation;
 import com.example.masterai.model.GenerationResponse;
 import com.example.masterai.model.ImageResponse;
+import com.example.masterai.model.Comment;
 import com.example.masterai.model.LoginResponse;
 import com.example.masterai.model.Post;
 import com.example.masterai.model.PromptResponse;
@@ -24,6 +25,15 @@ import retrofit2.http.Multipart;
 import retrofit2.http.POST;
 import retrofit2.http.Part;
 import retrofit2.http.Query;
+import java.util.Map;
+import retrofit2.Call;
+import retrofit2.http.Body;
+import retrofit2.http.DELETE;
+import retrofit2.http.GET;
+import retrofit2.http.PATCH;
+import retrofit2.http.POST;
+import retrofit2.http.PUT;
+import retrofit2.http.Path;
 
 public interface ApiService {
     @GET("api/users/")
@@ -35,8 +45,11 @@ public interface ApiService {
     @POST("api/users/register/")
     Call<User> register(@Body User user);
 
+    @GET("api/users/{id}/")
+    Call<User> getUserById(@Path("id") String id);
+
     // API cho Post
-    @GET("api/posts/feed")
+    @GET("api/posts/feed/")
     Call<List<Post>> getPosts();
 
     @POST("api/posts/")
@@ -82,4 +95,18 @@ public interface ApiService {
             @Field("generation_id") String generationId
     );
 
+    @POST("api/posts/{id}/like/")
+    Call<Map<String, String>> toggleLike(@Path("id") String postId, @Body Map<String, String> body);
+
+    @GET("api/posts/{id}/comments/")
+    Call<List<Comment>> getComments(@Path("id") String postId);
+
+    @POST("api/posts/{id}/comment/")
+    Call<Comment> addComment(@Path("id") String postId, @Body Map<String, Object> body);
+
+    @DELETE("api/posts/{id}/")
+    Call<Map<String, String>> deletePost(@Path("id") String postId);
+
+    @PATCH("api/posts/{id}/update/")
+    Call<Post> updatePost(@Path("id") String postId, @Body Map<String, Object> body);
 }

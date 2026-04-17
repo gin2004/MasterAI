@@ -2,6 +2,7 @@ package com.example.masterai.ui.login;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -35,6 +36,7 @@ public class LoginActivity extends AppCompatActivity {
         TextInputEditText etUsername = findViewById(R.id.etEmail); 
         TextInputEditText etPassword = findViewById(R.id.etPassword);
         MaterialButton btnLogin = findViewById(R.id.btnLogin);
+        TextView tvGoToRegister = findViewById(R.id.tvGoToRegister);
 
         btnLogin.setOnClickListener(v -> {
             String username = etUsername.getText().toString().trim();
@@ -51,11 +53,11 @@ public class LoginActivity extends AppCompatActivity {
                 @Override
                 public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
                     if (response.isSuccessful() && response.body() != null) {
-                        // Lấy object User từ trong LoginResponse
                         User user = response.body().getUser();
                         
                         // Lưu User và trạng thái đăng nhập vào SharedPreferences
                         UserManager.getInstance(LoginActivity.this).setUser(user);
+                        UserManager.getInstance().setUser(user);
                         
                         Toast.makeText(LoginActivity.this, response.body().getMessage(), Toast.LENGTH_SHORT).show();
                         startActivity(new Intent(LoginActivity.this, MainActivity.class));
@@ -70,6 +72,11 @@ public class LoginActivity extends AppCompatActivity {
                     Toast.makeText(LoginActivity.this, "Lỗi kết nối server", Toast.LENGTH_SHORT).show();
                 }
             });
+        });
+
+        tvGoToRegister.setOnClickListener(v -> {
+            Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
+            startActivity(intent);
         });
     }
 }

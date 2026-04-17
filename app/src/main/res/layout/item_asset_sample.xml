@@ -28,7 +28,7 @@
             android:padding="4dp">
 
             <TextView
-                android:id="@+id/tvAssetName"
+                android:id="@+id/tvAssetType"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
@@ -38,7 +38,7 @@
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/tvAssetStatus"
+                android:id="@+id/createAt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"

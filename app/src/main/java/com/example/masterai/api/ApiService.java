@@ -1,5 +1,9 @@
 package com.example.masterai.api;
 
+import com.example.masterai.model.Asset;
+import com.example.masterai.model.AssetResponse;
+import com.example.masterai.model.Generation;
+import com.example.masterai.model.GenerationResponse;
 import com.example.masterai.model.ImageResponse;
 import com.example.masterai.model.LoginResponse;
 import com.example.masterai.model.Post;
@@ -18,6 +22,7 @@ import retrofit2.http.GET;
 import retrofit2.http.Multipart;
 import retrofit2.http.POST;
 import retrofit2.http.Part;
+import retrofit2.http.Query;
 
 public interface ApiService {
     @GET("api/users/")
@@ -46,10 +51,34 @@ public interface ApiService {
     @Multipart
     @POST("api/ai/generate-image/")
     Call<ImageResponse> generateImage(
+            @Part("user_id") RequestBody userId,
             @Part("prompt") RequestBody prompt,
             @Part("aspect_ratio") RequestBody ratio,
             @Part("resolution") RequestBody res,
-            @Part MultipartBody.Part image // Có thể null nếu không gửi ảnh
+            @Part MultipartBody.Part image
+    );
+    // 2. Lấy lịch sử sinh
+    @GET("api/ai/generations/")
+    Call<GenerationResponse> getGenerations(
+            @Query("user_id") String userId,
+            @Query("type") String type,
+            @Query("page") int page,
+            @Query("limit") int limit
+    );
+
+    // 3. Lấy Assets (Không phân trang)
+    @GET("api/ai/assets/")
+    Call<AssetResponse> getAssets(
+            @Query("user_id") String userId,
+            @Query("type") String type
+    );
+
+    // 4. Thêm vào Asset (Yêu thích)
+    @FormUrlEncoded
+    @POST("api/ai/add-asset/")
+    Call<ImageResponse> addAsset(
+            @Field("user_id") String userId,
+            @Field("generation_id") String generationId
     );
 
 }

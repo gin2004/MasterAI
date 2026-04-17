@@ -62,6 +62,7 @@
         android:orientation="horizontal">
 
         <LinearLayout
+            android:id="@+id/share"
             android:layout_width="wrap_content"
             android:layout_height="48dp"
             android:background="@drawable/bg_input_field"
@@ -75,7 +76,6 @@
                 app:tint="#A066FF" />
 
             <TextView
-                android:id="@+id/share"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="6dp"

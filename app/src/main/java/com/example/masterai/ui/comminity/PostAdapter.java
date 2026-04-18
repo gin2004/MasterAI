@@ -1,5 +1,6 @@
 package com.example.masterai.ui.comminity;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,6 +18,7 @@ import com.example.masterai.R;
 import com.example.masterai.api.RetrofitClient;
 import com.example.masterai.model.Post;
 import com.example.masterai.model.User;
+import com.example.masterai.utils.PostUtils;
 import com.example.masterai.utils.UserManager;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -52,7 +54,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         Post post = posts.get(position);
         
         holder.tvContent.setText(post.getContent());
-        holder.tvTime.setText(post.getCreatedAt() != null ? post.getCreatedAt() : "Just now");
+        holder.tvTime.setText(PostUtils.getTimeAgo(post.getCreatedAt()));
         holder.tvLikeCount.setText(String.valueOf(post.getLikeCount()));
         holder.tvCommentCount.setText(String.valueOf(post.getCommentCount()));
 
@@ -61,9 +63,9 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
 
         if (isMyPost) {
             holder.llMyPostActions.setVisibility(View.VISIBLE);
-            holder.btnFollow.setVisibility(View.GONE);
         } else {
             holder.llMyPostActions.setVisibility(View.GONE);
+
         }
 
         loadUserInfo(holder, post.getUserId(), isMyPost);
@@ -133,6 +135,8 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         if (currentUser == null) return;
         Map<String, String> body = new HashMap<>();
         body.put("user_id", currentUser.getId());
+        holder.tvLikeCount.setText(String.valueOf(post.getLikeCount()+1));
+
         RetrofitClient.getApiService().toggleLike(post.getId(), body).enqueue(new Callback<Map<String, String>>() {
             @Override
             public void onResponse(Call<Map<String, String>> call, Response<Map<String, String>> response) {
@@ -146,7 +150,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
                         post.setLikeCount(currentLikes - 1);
                         holder.ivLike.setColorFilter(holder.itemView.getContext().getColor(R.color.gray_text));
                     }
-                    holder.tvLikeCount.setText(String.valueOf(post.getLikeCount()));
                 }
             }
             @Override
@@ -158,7 +161,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         if (userCache.containsKey(userId)) {
             displayUserInfo(holder, userCache.get(userId), isMyPost);
         } else {
-            RetrofitClient.getApiService().getUserById(userId).enqueue(new Callback<User>() {
+            RetrofitClient.getApiService().getUserById(userId,null).enqueue(new Callback<User>() {
                 @Override
                 public void onResponse(Call<User> call, Response<User> response) {
                     if (response.isSuccessful() && response.body() != null) {
@@ -173,8 +176,9 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private void displayUserInfo(PostViewHolder holder, User user, boolean isMyPost) {
-        holder.tvName.setText(user.getUsername());
+        holder.tvName.setText("@"+user.getUsername());
         if (user.getAvatarUrl() != null && !user.getAvatarUrl().isEmpty()) {
             Glide.with(holder.itemView.getContext()).load(user.getAvatarUrl()).circleCrop().into(holder.ivAvatar);
         }
@@ -208,7 +212,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             super(itemView);
             ivAvatar = itemView.findViewById(R.id.ivAvatar);
             ivLike = itemView.findViewById(R.id.ivLike);
-            tvName = itemView.findViewById(R.id.tvName);
+            tvName = itemView.findViewById(R.id.tvUserName);
             tvTime = itemView.findViewById(R.id.tvTime);
             tvContent = itemView.findViewById(R.id.tvContent);
             tvLikeCount = itemView.findViewById(R.id.tvLikeCount);
@@ -216,7 +220,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             rvPostMedia = itemView.findViewById(R.id.rvPostMedia);
             btnComment = itemView.findViewById(R.id.btnComment);
             btnLike = itemView.findViewById(R.id.btnLike);
-            btnFollow = itemView.findViewById(R.id.btnFollow);
+
             llMyPostActions = itemView.findViewById(R.id.llMyPostActions);
             btnEdit = itemView.findViewById(R.id.btnEdit);
             btnDelete = itemView.findViewById(R.id.btnDelete);

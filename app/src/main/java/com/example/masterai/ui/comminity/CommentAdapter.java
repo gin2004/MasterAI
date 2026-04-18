@@ -54,7 +54,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
         if (userCache.containsKey(userId)) {
             displayUserInfo(holder, userCache.get(userId));
         } else {
-            RetrofitClient.getApiService().getUserById(userId).enqueue(new Callback<User>() {
+            RetrofitClient.getApiService().getUserById(userId,null).enqueue(new Callback<User>() {
                 @Override
                 public void onResponse(Call<User> call, Response<User> response) {
                     if (response.isSuccessful() && response.body() != null) {

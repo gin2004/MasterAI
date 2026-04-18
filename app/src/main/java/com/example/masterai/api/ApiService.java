@@ -46,7 +46,7 @@ public interface ApiService {
     Call<User> register(@Body User user);
 
     @GET("api/users/{id}/")
-    Call<User> getUserById(@Path("id") String id);
+    Call<User> getUserById(@Path("id") String id,@Query("current_user_id") String currentUserId);
 
     // API cho Post
     @GET("api/posts/feed/")
@@ -80,7 +80,7 @@ public interface ApiService {
             @Query("limit") int limit
     );
 
-    // 3. Lấy Assets (Không phân trang)
+    // 3. Lấy Assets
     @GET("api/ai/assets/")
     Call<AssetResponse> getAssets(
             @Query("user_id") String userId,

@@ -28,6 +28,7 @@ import com.example.masterai.model.Generation;
 import com.example.masterai.model.GenerationResponse;
 import com.example.masterai.model.ImageResponse;
 import com.example.masterai.model.PromptResponse;
+import com.example.masterai.utils.ViewsUtils;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
@@ -76,6 +77,8 @@ public class ImageFragment extends Fragment {
     private void initViews() {
         rvAssets = binding.rvAssets;
         rvGenerations = binding.rvGenerations;
+        //set up bottom nav
+        ViewsUtils.controlBottomNavigationView(rvGenerations, this);
 
         // Khởi tạo adapter với trạng thái loading mặc định
         generationAdapter = new GenerationAdapter(new ArrayList<>());

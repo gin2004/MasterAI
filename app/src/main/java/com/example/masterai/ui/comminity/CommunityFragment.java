@@ -1,27 +1,25 @@
 package com.example.masterai.ui.comminity;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.PopupMenu;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.bumptech.glide.Glide;
 import com.example.masterai.R;
 import com.example.masterai.api.RetrofitClient;
 import com.example.masterai.model.Post;
 import com.example.masterai.model.User;
-import com.example.masterai.ui.login.LoginActivity;
-import com.example.masterai.ui.profile.ProfileFragment;
 import com.example.masterai.utils.UserManager;
+import com.example.masterai.utils.ViewsUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 import retrofit2.Call;
@@ -32,16 +30,17 @@ public class CommunityFragment extends Fragment {
 
     private RecyclerView rvPosts;
     private PostAdapter postAdapter;
-    private ImageView ivUserAvatar;
-
+    private User currentUser;
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_community, container, false);
 
+        initData(view);
         rvPosts = view.findViewById(R.id.rvPosts);
-        ivUserAvatar = view.findViewById(R.id.ivUserAvatar);
-
+        //ẩn hiện bottom nav
+        ViewsUtils.controlBottomNavigationView(rvPosts, this);
+        // Cấu hình RecyclerView
         rvPosts.setLayoutManager(new LinearLayoutManager(getContext()));
 
         postAdapter = new PostAdapter(new ArrayList<>());
@@ -54,59 +53,16 @@ public class CommunityFragment extends Fragment {
                 .commit();
         });
 
-        ivUserAvatar.setOnClickListener(this::showUserMenu);
-
-        // Load current user avatar
-        loadCurrentUserAvatar();
-
         // Tải danh sách bài viết từ API
         fetchPosts();
 
         return view;
     }
 
-    private void loadCurrentUserAvatar() {
-        User currentUser = UserManager.getInstance(requireContext()).getUser();
-        if (currentUser != null && currentUser.getAvatarUrl() != null && !currentUser.getAvatarUrl().isEmpty()) {
-            Glide.with(this)
-                .load(currentUser.getAvatarUrl())
-                .placeholder(android.R.drawable.ic_menu_report_image)
-                .circleCrop()
-                .into(ivUserAvatar);
-        }
-    }
-
-    private void showUserMenu(View v) {
-        PopupMenu popupMenu = new PopupMenu(getContext(), v);
-        popupMenu.getMenu().add(0, 1, 0, "Trang cá nhân");
-        popupMenu.getMenu().add(0, 2, 1, "Đăng xuất");
-
-        popupMenu.setOnMenuItemClickListener(item -> {
-            switch (item.getItemId()) {
-                case 1:
-                    getParentFragmentManager().beginTransaction()
-                        .replace(R.id.fragment_container, new ProfileFragment())
-                        .addToBackStack(null)
-                        .commit();
-                    return true;
-                case 2:
-                    logout();
-                    return true;
-                default:
-                    return false;
-            }
-        });
-        popupMenu.show();
-    }
-
-    private void logout() {
-        UserManager.getInstance(requireContext()).logout();
-        Intent intent = new Intent(getActivity(), LoginActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
-        if (getActivity() != null) {
-            getActivity().finish();
-        }
+    private void initData(View view) {
+        ImageView ivUserAvatar = view.findViewById(R.id.ivUserAvatar);
+        currentUser = UserManager.getInstance(requireContext()).getUser();
+        Glide.with(requireContext()).load(currentUser.getAvatarUrl()).circleCrop().into(ivUserAvatar);
     }
 
     private void fetchPosts() {
@@ -132,6 +88,5 @@ public class CommunityFragment extends Fragment {
         super.onResume();
         // Cập nhật lại danh sách mỗi khi fragment hiển thị lại (ví dụ sau khi đăng bài xong quay lại)
         fetchPosts();
-        loadCurrentUserAvatar();
     }
 }

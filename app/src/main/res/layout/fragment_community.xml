@@ -24,7 +24,6 @@
         android:layout_height="40dp"
         android:layout_marginEnd="16dp"
         android:background="@color/gray_bg"
-        android:src="@android:drawable/ic_menu_report_image"
         app:layout_constraintBottom_toBottomOf="@id/tvTitle"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/tvTitle"
@@ -44,7 +43,7 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:layout_gravity="center"
-            android:src="@android:drawable/ic_popup_reminder"
+            android:src="@drawable/ic_notification"
             app:tint="@color/gray_text" />
 
         <View

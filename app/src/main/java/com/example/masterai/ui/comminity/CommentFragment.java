@@ -98,7 +98,7 @@ public class CommentFragment extends Fragment {
             return;
         }
 
-        User currentUser = UserManager.getInstance().getUser();
+        User currentUser = UserManager.getInstance(requireContext()).getUser();
         if (currentUser == null) {
             Toast.makeText(getContext(), "Vui lòng đăng nhập để bình luận", Toast.LENGTH_SHORT).show();
             return;

@@ -57,7 +57,6 @@ public class LoginActivity extends AppCompatActivity {
                         
                         // Lưu User và trạng thái đăng nhập vào SharedPreferences
                         UserManager.getInstance(LoginActivity.this).setUser(user);
-                        UserManager.getInstance().setUser(user);
                         
                         Toast.makeText(LoginActivity.this, response.body().getMessage(), Toast.LENGTH_SHORT).show();
                         startActivity(new Intent(LoginActivity.this, MainActivity.class));

@@ -1,0 +1,17 @@
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+
+    <!-- Màu nền xanh -->
+    <solid android:color="#4CAF50"/>
+
+    <!-- Viền trắng -->
+    <stroke
+        android:width="2dp"
+        android:color="#FFFFFF"/>
+
+    <!-- Kích thước -->
+    <size
+        android:width="12dp"
+        android:height="12dp"/>
+
+</shape>

@@ -1,0 +1,14 @@
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+
+    <!-- Màu đỏ -->
+    <solid android:color="#F44336"/>
+
+    <!-- Padding để chứa số -->
+    <padding
+        android:left="6dp"
+        android:right="6dp"
+        android:top="2dp"
+        android:bottom="2dp"/>
+
+</shape>

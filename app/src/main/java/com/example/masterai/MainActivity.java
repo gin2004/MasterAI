@@ -15,7 +15,7 @@ import com.example.masterai.api.RetrofitClient;
 import com.example.masterai.model.User;
 import com.example.masterai.ui.ai.GenerateFragment;
 import com.example.masterai.ui.comminity.CommunityFragment;
-import com.example.masterai.ui.comminity.MessageFragment;
+import com.example.masterai.ui.chat.MessageFragment;
 import com.example.masterai.ui.comminity.PostFragment;
 import com.example.masterai.ui.profile.ProfileFragment;
 import com.example.masterai.utils.UserManager;
@@ -130,6 +130,10 @@ public class MainActivity extends AppCompatActivity {
 
     public void navigateToCommunity() {
         bottomNav.setSelectedItemId(R.id.btnCommunity);
+    }
+
+    public void navigateToProfile() {
+        bottomNav.setSelectedItemId(R.id.btnProfile);
     }
 
 

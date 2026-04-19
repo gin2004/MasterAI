@@ -10,7 +10,7 @@
         android:id="@+id/ivAvatar"
         android:layout_width="32dp"
         android:layout_height="32dp"
-        android:src="@android:drawable/ic_menu_report_image"
+        android:src="@drawable/ic_user"
         app:shapeAppearanceOverlay="@style/CircleImage"
         android:background="@color/gray_bg" />
 
@@ -18,9 +18,9 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
+        android:background="@drawable/bg_comment"
         android:layout_marginStart="12dp"
-        android:background="@drawable/bg_bottom_nav"
-        android:padding="12dp"
+        android:padding="16dp"
         android:orientation="vertical">
 
         <LinearLayout

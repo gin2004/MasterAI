@@ -1,182 +1,184 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_margin="12dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="0dp"
-    app:strokeWidth="0.1dp"
-    app:strokeColor="@color/gray_border">
-
-    <LinearLayout
+<layout>
+    <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:background="@color/white"
-        android:padding="16dp">
+        android:layout_margin="12dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="0dp"
+        app:strokeWidth="0.1dp"
+        app:strokeColor="@color/gray_border">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
-
-            <com.google.android.material.imageview.ShapeableImageView
-                android:id="@+id/ivAvatar"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                app:shapeAppearanceOverlay="@style/CircleImage"
-                android:background="@color/gray_bg" />
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginStart="12dp"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/tvUserName"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="User Name"
-                    android:textStyle="bold"
-                    android:textColor="@color/black" />
-
-                <TextView
-                    android:id="@+id/tvTime"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="2h"
-                    android:textSize="12sp"
-                    android:textColor="@color/gray_text" />
-            </LinearLayout>
-
-<!--            <com.google.android.material.button.MaterialButton-->
-<!--                android:id="@+id/btnFollow"-->
-<!--                android:layout_width="wrap_content"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:text="Theo dõi"-->
-<!--                style="@style/Widget.Material3.Button.OutlinedButton"-->
-<!--                app:icon="@android:drawable/ic_input_add"-->
-<!--                android:textSize="12sp"-->
-<!--                app:cornerRadius="20dp"/>-->
+            android:orientation="vertical"
+            android:background="@color/white"
+            android:padding="16dp">
 
             <LinearLayout
-                android:id="@+id/llMyPostActions"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:id="@+id/ivAvatar"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    app:shapeAppearanceOverlay="@style/CircleImage"
+                    android:background="@color/gray_bg" />
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="12dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tvUserName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="User Name"
+                        android:textStyle="bold"
+                        android:textColor="@color/black" />
+
+                    <TextView
+                        android:id="@+id/tvTime"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="2h"
+                        android:textSize="12sp"
+                        android:textColor="@color/gray_text" />
+                </LinearLayout>
+
+                <!--            <com.google.android.material.button.MaterialButton-->
+                <!--                android:id="@+id/btnFollow"-->
+                <!--                android:layout_width="wrap_content"-->
+                <!--                android:layout_height="wrap_content"-->
+                <!--                android:text="Theo dõi"-->
+                <!--                style="@style/Widget.Material3.Button.OutlinedButton"-->
+                <!--                app:icon="@android:drawable/ic_input_add"-->
+                <!--                android:textSize="12sp"-->
+                <!--                app:cornerRadius="20dp"/>-->
+
+                <LinearLayout
+                    android:id="@+id/llMyPostActions"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:id="@+id/btnEdit"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@android:drawable/ic_menu_edit"
+                        app:tint="@color/gray_text"
+                        android:layout_marginEnd="8dp" />
+
+                    <ImageView
+                        android:id="@+id/btnDelete"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@android:drawable/ic_menu_delete"
+                        app:tint="@color/red_dot" />
+                </LinearLayout>
 
                 <ImageView
-                    android:id="@+id/btnEdit"
+                    android:id="@+id/btnMore"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
-                    android:src="@android:drawable/ic_menu_edit"
-                    app:tint="@color/gray_text"
-                    android:layout_marginEnd="8dp" />
-
-                <ImageView
-                    android:id="@+id/btnDelete"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@android:drawable/ic_menu_delete"
-                    app:tint="@color/red_dot" />
+                    android:layout_marginStart="8dp"
+                    android:src="@android:drawable/ic_menu_more"
+                    app:tint="@color/gray_text" />
             </LinearLayout>
 
-            <ImageView
-                android:id="@+id/btnMore"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_marginStart="8dp"
-                android:src="@android:drawable/ic_menu_more"
-                app:tint="@color/gray_text" />
-        </LinearLayout>
-
-        <TextView
-            android:id="@+id/tvContent"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="Post content goes here"
-            android:textColor="@color/black" />
-
-        <!-- Media RecyclerView (Images and Voices) -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvPostMedia"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:orientation="horizontal"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            android:visibility="gone" />
-
-        <!-- Bottom Actions: Like, Comment, Share -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
-
-            <LinearLayout
-                android:id="@+id/btnLike"
-                android:layout_width="wrap_content"
+            <TextView
+                android:id="@+id/tvContent"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/bg_bottom_nav"
-                android:paddingHorizontal="10dp"
-                android:paddingVertical="6dp"
+                android:layout_marginTop="12dp"
+                android:text="Post content goes here"
+                android:textColor="@color/black" />
+
+            <!-- Media RecyclerView (Images and Voices) -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvPostMedia"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="horizontal"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                android:visibility="gone" />
+
+            <!-- Bottom Actions: Like, Comment, Share -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="horizontal"
                 android:gravity="center_vertical">
-                <ImageView
-                    android:id="@+id/ivLike"
-                    android:layout_width="16dp"
-                    android:layout_height="16dp"
-                    android:src="@android:drawable/btn_star_big_on"
-                    app:tint="@color/gray_text" />
-                <TextView
-                    android:id="@+id/tvLikeCount"
+
+                <LinearLayout
+                    android:id="@+id/btnLike"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="2"
-                    android:layout_marginStart="6dp"
-                    android:textSize="12sp" />
-            </LinearLayout>
+                    android:background="@drawable/bg_bottom_nav"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="6dp"
+                    android:gravity="center_vertical">
+                    <ImageView
+                        android:id="@+id/ivLike"
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:src="@android:drawable/btn_star_big_on"
+                        app:tint="@color/gray_text" />
+                    <TextView
+                        android:id="@+id/tvLikeCount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="2"
+                        android:layout_marginStart="6dp"
+                        android:textSize="12sp" />
+                </LinearLayout>
 
-            <LinearLayout
-                android:id="@+id/btnComment"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:background="@drawable/bg_bottom_nav"
-                android:paddingHorizontal="10dp"
-                android:paddingVertical="6dp"
-                android:gravity="center_vertical">
-                <ImageView
-                    android:layout_width="16dp"
-                    android:layout_height="16dp"
-                    android:src="@drawable/ic_nav_message"
-                    app:tint="@color/gray_text" />
-                <TextView
-                    android:id="@+id/tvCommentCount"
+                <LinearLayout
+                    android:id="@+id/btnComment"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="5"
-                    android:layout_marginStart="6dp"
-                    android:textSize="12sp" />
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/bg_bottom_nav"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="6dp"
+                    android:gravity="center_vertical">
+                    <ImageView
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:src="@drawable/ic_nav_message"
+                        app:tint="@color/gray_text" />
+                    <TextView
+                        android:id="@+id/tvCommentCount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="5"
+                        android:layout_marginStart="6dp"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+                <ImageView
+                    android:id="@+id/btnShare"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@android:drawable/ic_menu_share"
+                    app:tint="@color/gray_text" />
             </LinearLayout>
 
-            <View
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:layout_weight="1" />
-
-            <ImageView
-                android:id="@+id/btnShare"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@android:drawable/ic_menu_share"
-                app:tint="@color/gray_text" />
         </LinearLayout>
-
-    </LinearLayout>
-</com.google.android.material.card.MaterialCardView>
+    </com.google.android.material.card.MaterialCardView>
+</layout>

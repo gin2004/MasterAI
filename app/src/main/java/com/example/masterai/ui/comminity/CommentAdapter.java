@@ -6,12 +6,16 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.appcompat.widget.ViewUtils;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.masterai.R;
 import com.example.masterai.api.RetrofitClient;
 import com.example.masterai.model.Comment;
 import com.example.masterai.model.User;
+import com.example.masterai.utils.PostUtils;
+import com.example.masterai.utils.ViewsUtils;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +47,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
     public void onBindViewHolder(@NonNull CommentViewHolder holder, int position) {
         Comment comment = comments.get(position);
         holder.tvContent.setText(comment.getContent());
-        holder.tvTime.setText(comment.getCreatedAt() != null ? comment.getCreatedAt() : "Just now");
+        holder.tvTime.setText(PostUtils.getTimeAgo(comment.getCreatedAt()));
 
         // Load user info for comment
         loadUserInfo(holder, comment.getUserId());

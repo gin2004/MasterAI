@@ -2,11 +2,14 @@ package com.example.masterai.api;
 
 import com.example.masterai.model.Asset;
 import com.example.masterai.model.AssetResponse;
+import com.example.masterai.model.FollowRequest;
+import com.example.masterai.model.FollowResponse;
 import com.example.masterai.model.Generation;
 import com.example.masterai.model.GenerationResponse;
 import com.example.masterai.model.ImageResponse;
 import com.example.masterai.model.Comment;
 import com.example.masterai.model.LoginResponse;
+import com.example.masterai.model.PaginatedPostResponse;
 import com.example.masterai.model.Post;
 import com.example.masterai.model.PromptResponse;
 import com.example.masterai.model.User;
@@ -47,6 +50,12 @@ public interface ApiService {
 
     @GET("api/users/{id}/")
     Call<User> getUserById(@Path("id") String id,@Query("current_user_id") String currentUserId);
+
+    @POST("api/users/{user_id}/follow/")
+    Call<FollowResponse> toggleFollow(
+            @Path("user_id") String targetUserId, // ID của người được follow (truyền lên URL)
+            @Body FollowRequest request           // Chứa ID của người đang follow (truyền vào Body)
+    );
 
     // API cho Post
     @GET("api/posts/feed/")
@@ -109,4 +118,11 @@ public interface ApiService {
 
     @PATCH("api/posts/{id}/update/")
     Call<Post> updatePost(@Path("id") String postId, @Body Map<String, Object> body);
+
+    @GET("api/posts/user/{user_id}/")
+    Call<PaginatedPostResponse<Post>> getUserPosts(
+            @Path("user_id") String userId,
+            @Query("page") int page,            // Truyền số trang (vd: 1, 2)
+            @Query("page_size") Integer pageSize // Có thể null để dùng default của backend
+    );
 }

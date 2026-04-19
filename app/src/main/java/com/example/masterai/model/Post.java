@@ -28,6 +28,9 @@ public class Post implements Serializable {
 
     @SerializedName("media")
     private List<Media> media;
+    @SerializedName("comments")
+    private List<Comment> comments;
+
 
     public Post() {
     }
@@ -62,4 +65,6 @@ public class Post implements Serializable {
 
     public List<Media> getMedia() { return media; }
     public void setMedia(List<Media> media) { this.media = media; }
+    public List<Comment> getComments() { return comments; }
+    public void setComments(List<Comment> comments) { this.comments = comments; }
 }

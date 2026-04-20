@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.masterai.R;
 import com.example.masterai.api.RetrofitClient;
+import com.example.masterai.model.Notification;
 import com.example.masterai.model.Post;
 import com.example.masterai.model.User;
 import com.example.masterai.utils.PostUtils;
@@ -78,6 +79,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             CommentFragment commentFragment = new CommentFragment();
             Bundle bundle = new Bundle();
             bundle.putString("post_id", post.getId());
+            bundle.putString("post_user_id", post.getUserId()); // Pass author ID for notification
             commentFragment.setArguments(bundle);
             activity.getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, commentFragment)
@@ -135,25 +137,43 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         if (currentUser == null) return;
         Map<String, String> body = new HashMap<>();
         body.put("user_id", currentUser.getId());
-        holder.tvLikeCount.setText(String.valueOf(post.getLikeCount()+1));
-
+        
+        // Optimistic UI update
+        int initialLikes = post.getLikeCount();
+        
         RetrofitClient.getApiService().toggleLike(post.getId(), body).enqueue(new Callback<Map<String, String>>() {
             @Override
             public void onResponse(Call<Map<String, String>> call, Response<Map<String, String>> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     String message = response.body().get("message");
-                    int currentLikes = post.getLikeCount();
                     if ("liked".equals(message)) {
-                        post.setLikeCount(currentLikes + 1);
+                        post.setLikeCount(initialLikes + 1);
+                        holder.tvLikeCount.setText(String.valueOf(post.getLikeCount()));
                         holder.ivLike.setColorFilter(holder.itemView.getContext().getColor(R.color.purple_primary));
+                        
+                        // Gửi thông báo cho chủ bài viết
+                        if (!currentUser.getId().equals(post.getUserId())) {
+                            sendNotification(post.getUserId(), currentUser.getUsername() + " đã thích bài viết của bạn", "like");
+                        }
                     } else {
-                        post.setLikeCount(currentLikes - 1);
+                        post.setLikeCount(initialLikes - 1);
+                        holder.tvLikeCount.setText(String.valueOf(post.getLikeCount()));
                         holder.ivLike.setColorFilter(holder.itemView.getContext().getColor(R.color.gray_text));
                     }
                 }
             }
             @Override
             public void onFailure(Call<Map<String, String>> call, Throwable t) {}
+        });
+    }
+
+    private void sendNotification(String recipientId, String content, String type) {
+        Notification notification = new Notification(recipientId, content, type);
+        RetrofitClient.getApiService().createNotification(notification).enqueue(new Callback<Notification>() {
+            @Override
+            public void onResponse(Call<Notification> call, Response<Notification> response) {}
+            @Override
+            public void onFailure(Call<Notification> call, Throwable t) {}
         });
     }
 
@@ -183,8 +203,12 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             Glide.with(holder.itemView.getContext()).load(user.getAvatarUrl()).circleCrop().into(holder.ivAvatar);
         }
 
-        if (!isMyPost) {
-            holder.btnFollow.setVisibility(user.isFollowed() ? View.GONE : View.VISIBLE);
+        if (holder.btnFollow != null) {
+            if (isMyPost) {
+                holder.btnFollow.setVisibility(View.GONE);
+            } else {
+                holder.btnFollow.setVisibility(user.isFollowed() ? View.GONE : View.VISIBLE);
+            }
         }
     }
 
@@ -221,6 +245,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             btnComment = itemView.findViewById(R.id.btnComment);
             btnLike = itemView.findViewById(R.id.btnLike);
 
+            btnFollow = itemView.findViewById(R.id.btnFollow);
             llMyPostActions = itemView.findViewById(R.id.llMyPostActions);
             btnEdit = itemView.findViewById(R.id.btnEdit);
             btnDelete = itemView.findViewById(R.id.btnDelete);

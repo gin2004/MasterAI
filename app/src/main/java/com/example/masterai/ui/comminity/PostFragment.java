@@ -1,8 +1,5 @@
 package com.example.masterai.ui.comminity;
 
-import android.app.Activity;
-import android.content.ClipData;
-import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -13,6 +10,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -42,24 +40,14 @@ public class PostFragment extends Fragment {
     private ImagePreviewAdapter imagePreviewAdapter;
     private List<Uri> selectedImageUris = new ArrayList<>();
 
-    private final ActivityResultLauncher<Intent> pickImageLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
-                    if (result.getData().getClipData() != null) {
-                        ClipData clipData = result.getData().getClipData();
-                        for (int i = 0; i < clipData.getItemCount(); i++) {
-                            selectedImageUris.add(clipData.getItemAt(i).getUri());
-                        }
-                    } else if (result.getData().getData() != null) {
-                        selectedImageUris.add(result.getData().getData());
-                    }
-                    
-                    // Cập nhật giao diện sau khi chọn ảnh
+    // Sử dụng Photo Picker (Android 13+) để tránh lỗi SecurityException
+    private final ActivityResultLauncher<PickVisualMediaRequest> pickMultipleMedia =
+            registerForActivityResult(new ActivityResultContracts.PickMultipleVisualMedia(5), uris -> {
+                if (!uris.isEmpty()) {
+                    selectedImageUris.addAll(uris);
                     updateImagesVisibility();
                 }
-            }
-    );
+            });
 
     @Nullable
     @Override
@@ -83,10 +71,10 @@ public class PostFragment extends Fragment {
     }
 
     private void openGallery() {
-        Intent intent = new Intent(Intent.ACTION_PICK);
-        intent.setType("image/*");
-        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-        pickImageLauncher.launch(intent);
+        // Mở Photo Picker để chọn nhiều ảnh/video
+        pickMultipleMedia.launch(new PickVisualMediaRequest.Builder()
+                .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
+                .build());
     }
 
     private void updateImagesVisibility() {
@@ -121,8 +109,14 @@ public class PostFragment extends Fragment {
         List<Media> mediaList = new ArrayList<>();
         for (Uri uri : selectedImageUris) {
             Media media = new Media();
-            // Trong thực tế, bạn cần upload file này lên server để lấy URL thực.
-            // Hiện tại chúng ta gửi String Uri để demo theo model hiện tại.
+            // Cấp quyền đọc bền vững cho URI nếu cần (thường dùng khi lưu vào DB)
+            try {
+                requireContext().getContentResolver().takePersistableUriPermission(uri, 
+                        android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            } catch (SecurityException e) {
+                // Photo picker thường không hỗ trợ persistable permissions cho mọi provider
+                // nhưng nó tự cấp quyền tạm thời cho lifecycle của app
+            }
             media.setUrl(uri.toString()); 
             media.setMediaType("image");
             media.setSource("upload");

@@ -62,14 +62,10 @@ public class CommentFragment extends Fragment {
     }
 
     private void initViews(View view) {
-        Toolbar toolbar = view.findViewById(R.id.toolbar);
-        if (toolbar != null) {
-            toolbar.setNavigationOnClickListener(v -> {
-                if (getActivity() != null) {
-                    getActivity().onBackPressed();
-                }
-            });
-        }
+        ImageView back = view.findViewById(R.id.back);
+        back.setOnClickListener(v -> {if (getActivity() != null) {
+            getActivity().onBackPressed();
+        }});
 
         rvComments = view.findViewById(R.id.rvComments);
         rvComments.setLayoutManager(new LinearLayoutManager(getContext()));

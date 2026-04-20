@@ -19,9 +19,23 @@ public class AssetAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     private List<Asset> assetList;
     private boolean isLoading = true;
     private final int SKELETON_COUNT = 6;
+    private OnItemClickListener listener;
+
+    public interface OnItemClickListener {
+        void onItemClick(Asset asset);
+    }
 
     public AssetAdapter(List<Asset> assetList) {
         this.assetList = assetList;
+    }
+
+    public AssetAdapter(List<Asset> assetList, OnItemClickListener listener) {
+        this.assetList = assetList;
+        this.listener = listener;
+    }
+
+    public void setOnItemClickListener(OnItemClickListener listener) {
+        this.listener = listener;
     }
 
     public void setLoading(boolean loading) {
@@ -54,9 +68,15 @@ public class AssetAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             Glide.with(holder.itemView.getContext())
                     .load(asset.getMediaUrl())
                     .placeholder(R.drawable.ic_launcher_background)
-                    .into(((ViewHolder) holder).ivAsset);
+                    .into(viewHolder.ivAsset);
             viewHolder.tvType.setText(asset.getType());
             viewHolder.tvCreateAt.setText(AIUtils.getInstance().parseDate(asset.getCreatedAt()));
+
+            holder.itemView.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onItemClick(asset);
+                }
+            });
         }
     }
 

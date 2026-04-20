@@ -2,19 +2,19 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/btnCommunity"
-        android:icon="@drawable/ic_nav_community"
+        android:icon="@drawable/ic_community"
         android:title="Community" />
     <item
         android:id="@+id/btnGenerate"
-        android:icon="@drawable/ic_nav_generate"
+        android:icon="@drawable/ic_generate"
         android:title="Generate" />
     <item
         android:id="@+id/btnPost"
-        android:icon="@drawable/ic_nav_post"
+        android:icon="@drawable/ic_plus"
         android:title="Post" />
     <item
         android:id="@+id/btnMessage"
-        android:icon="@drawable/ic_nav_message"
+        android:icon="@drawable/ic_chat"
         android:title="Message" />
     <item
         android:id="@+id/btnProfile"

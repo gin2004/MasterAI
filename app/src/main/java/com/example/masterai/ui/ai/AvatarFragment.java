@@ -30,18 +30,25 @@ import com.example.masterai.model.Generation;
 import com.example.masterai.model.GenerationResponse;
 import com.example.masterai.model.ImageResponse;
 import com.example.masterai.model.PromptResponse;
+import com.example.masterai.model.User;
 import com.example.masterai.utils.AIUtils;
+import com.example.masterai.utils.UserManager;
 import com.example.masterai.utils.ViewsUtils;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -60,6 +67,9 @@ public class AvatarFragment extends Fragment {
     
     private GenerationAdapter generationAdapter;
     private AssetAdapter assetAdapter;
+    private User current_user;
+    private String userId =null;
+    private String currentGenerationId;
 
     private final ActivityResultLauncher<String> pickImageLauncher = registerForActivityResult(
             new ActivityResultContracts.GetContent(),
@@ -95,9 +105,19 @@ public class AvatarFragment extends Fragment {
         //set up bottom nav
         ViewsUtils.controlBottomNavigationView(rvGenerations, this);
 
+        //curent user
+        current_user = UserManager.getInstance(requireContext()).getUser();
+        userId = current_user.getId();
+
         // Khởi tạo adapter với trạng thái loading mặc định
         generationAdapter = new GenerationAdapter(new ArrayList<>());
         assetAdapter = new AssetAdapter(new ArrayList<>());
+
+        assetAdapter.setOnItemClickListener(asset -> {
+            if (asset.getPrompt() != null) {
+                binding.etPrompt.setText(asset.getPrompt());
+            }
+        });
         
         rvGenerations.setAdapter(generationAdapter);
         rvAssets.setAdapter(assetAdapter);
@@ -192,17 +212,15 @@ public class AvatarFragment extends Fragment {
         if (binding.radio2K.isChecked()) {
             selectedRes = "2K";
         }
-        //getUserId
-        String userId = "c7f8bca5-6201-41ad-911b-e47636f85d27";
 
         RequestBody rbPrompt = RequestBody.create(MediaType.parse("text/plain"), prompt);
         RequestBody rbRatio = RequestBody.create(MediaType.parse("text/plain"), "1:1");
         RequestBody rbRes = RequestBody.create(MediaType.parse("text/plain"), selectedRes);
-        RequestBody user_id = RequestBody.create(MediaType.parse("text/plain"), userId);
+        RequestBody user_id_body = RequestBody.create(MediaType.parse("text/plain"), userId);
 
         MultipartBody.Part imagePart = prepareFilePart("image", selectedImageUri);
 
-        RetrofitClient.getApiService().generateImage(user_id,rbPrompt, rbRatio, rbRes,imagePart)
+        RetrofitClient.getApiService().generateImage(user_id_body, rbPrompt, rbRatio, rbRes, imagePart)
                 .enqueue(new Callback<ImageResponse>() {
                     @Override
                     public void onResponse(Call<ImageResponse> call, Response<ImageResponse> response) {
@@ -212,6 +230,7 @@ public class AvatarFragment extends Fragment {
 
                         if (response.isSuccessful() && response.body() != null) {
                             ImageResponse data = response.body();
+                            currentGenerationId = data.generation_id;
                             if (data.media_url != null && !data.media_url.isEmpty()) {
                                 imageLink = data.media_url;
                                 showResultBottomSheet(data.media_url);
@@ -252,13 +271,46 @@ public class AvatarFragment extends Fragment {
         ImageView imgResult = view.findViewById(R.id.imgResult);
         ImageView btnBack = view.findViewById(R.id.btnBack);
         LinearLayout share = view.findViewById(R.id.share);
+        MaterialButton btnSaveAsset = view.findViewById(R.id.btnSaveAsset);
 
         Glide.with(this).load(imageUrl).into(imgResult);
         btnBack.setOnClickListener(v -> resultDialog.dismiss());
         share.setOnClickListener(v -> {
             AIUtils.getInstance().shareImageAndText(imageUrl, binding.etPrompt.getText().toString());
         });
+        if (btnSaveAsset != null) {
+            btnSaveAsset.setOnClickListener(v -> {
+                saveAsset();
+            });
+        }
         resultDialog.show();
+    }
+
+    private void saveAsset() {
+        if (userId != null && currentGenerationId != null) {
+            RetrofitClient.getApiService().addAsset(userId, currentGenerationId).enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    if (response.isSuccessful()) {
+                        try {
+                            String json = response.body().string();
+                            JSONObject jsonObject = new JSONObject(json);
+                            if (jsonObject.has("message")) {
+                                Toast.makeText(requireContext(), jsonObject.optString("message"), Toast.LENGTH_SHORT).show();
+                                fetchAssets();
+                            }
+                        } catch (IOException | JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ResponseBody> call, Throwable t) {
+                    Toast.makeText(requireContext(), "Không thể thêm", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
     }
 
     private void showErrorInBottomSheet(String error) {
@@ -319,7 +371,6 @@ public class AvatarFragment extends Fragment {
     }
 
     private void fetchGenerations(int page) {
-        String userId = "c7f8bca5-6201-41ad-911b-e47636f85d27";
         String type = "avatar";
 
         RetrofitClient.getApiService().getGenerations(userId, type, page, 10)
@@ -330,6 +381,11 @@ public class AvatarFragment extends Fragment {
                         if (response.isSuccessful() && response.body() != null) {
                             List<Generation> list = response.body().data;
                             generationAdapter = new GenerationAdapter(list);
+                            generationAdapter.setOnItemClickListener(generation -> {
+                                currentGenerationId = generation.getId();
+                                imageLink = generation.getMediaUrl();
+                                showResultBottomSheet(generation.getMediaUrl());
+                            });
                             generationAdapter.setLoading(false);
                             rvGenerations.setAdapter(generationAdapter);
                         }
@@ -343,7 +399,6 @@ public class AvatarFragment extends Fragment {
                 });
     }
     private void fetchAssets() {
-        String userId = "c7f8bca5-6201-41ad-911b-e47636f85d27";
         String type = "avatar";
 
         RetrofitClient.getApiService().getAssets(userId, type)
@@ -353,6 +408,11 @@ public class AvatarFragment extends Fragment {
                         if (response.isSuccessful() && response.body() != null) {
                             AssetResponse assetRes = response.body();
                             assetAdapter = new AssetAdapter(assetRes.getData());
+                            assetAdapter.setOnItemClickListener(asset -> {
+                                if (asset.getPrompt() != null) {
+                                    binding.etPrompt.setText(asset.getPrompt());
+                                }
+                            });
                             assetAdapter.setLoading(false);
                             rvAssets.setAdapter(assetAdapter);
                             

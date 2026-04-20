@@ -1,0 +1,6 @@
+<ImageView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/imgAvatar"
+    android:layout_width="26dp"
+    android:layout_height="26dp"
+    android:layout_gravity="center"
+    android:scaleType="centerCrop"/>

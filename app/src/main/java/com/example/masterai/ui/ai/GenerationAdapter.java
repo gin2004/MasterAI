@@ -16,9 +16,18 @@ public class GenerationAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     private List<Generation> generationList;
     private boolean isLoading = true;
     private final int SKELETON_COUNT = 6;
+    private OnItemClickListener listener;
+
+    public interface OnItemClickListener {
+        void onItemClick(Generation generation);
+    }
 
     public GenerationAdapter(List<Generation> generationList) {
         this.generationList = generationList;
+    }
+
+    public void setOnItemClickListener(OnItemClickListener listener) {
+        this.listener = listener;
     }
 
     public void setLoading(boolean loading) {
@@ -51,6 +60,12 @@ public class GenerationAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                     .load(generation.getMediaUrl())
                     .placeholder(R.drawable.ic_launcher_background)
                     .into(((ViewHolder) holder).ivGeneration);
+
+            holder.itemView.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onItemClick(generation);
+                }
+            });
         }
     }
 

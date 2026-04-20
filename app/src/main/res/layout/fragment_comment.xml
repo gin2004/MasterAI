@@ -6,13 +6,29 @@
     android:background="@color/white"
     android:orientation="vertical">
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="@color/white"
-        app:navigationIcon="@android:drawable/ic_menu_revert"
-        app:title="Comments" />
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="8dp"
+        >
+        <ImageView
+            android:id="@+id/back"
+            android:layout_width="26dp"
+            android:layout_height="26dp"
+            android:src="@drawable/ic_back"
+            />
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="18dp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:text="Bình luận"
+            />
+    </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvComments"
@@ -21,6 +37,7 @@
         android:layout_weight="1" />
 
     <LinearLayout
+        android:id="@+id/layoutComment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -32,17 +49,17 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:hint="Write a comment..."
+            android:hint="Viết bình luận .."
             android:background="@drawable/bg_edittext"
-            android:padding="12dp" />
+            android:padding="10dp" />
 
         <ImageView
             android:id="@+id/btnSend"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="34dp"
+            android:layout_height="34dp"
             android:layout_marginStart="8dp"
             android:padding="8dp"
-            android:src="@android:drawable/ic_menu_send"
+            android:src="@drawable/ic_send"
             app:tint="@color/purple_primary" />
     </LinearLayout>
 </LinearLayout>

@@ -8,6 +8,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.PickVisualMediaRequest;
@@ -17,6 +19,8 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.bumptech.glide.Glide;
 import com.example.masterai.MainActivity;
 import com.example.masterai.R;
 import com.example.masterai.api.RetrofitClient;
@@ -25,6 +29,8 @@ import com.example.masterai.model.Post;
 import com.example.masterai.model.User;
 import com.example.masterai.utils.UserManager;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.imageview.ShapeableImageView;
+
 import java.util.ArrayList;
 import java.util.List;
 import retrofit2.Call;
@@ -37,8 +43,11 @@ public class PostFragment extends Fragment {
     private MaterialButton btnSubmitPost;
     private ImageButton btnUploadImage;
     private RecyclerView rvImages;
+    private ShapeableImageView imgAvatar;
+    private TextView tvUsername;
     private ImagePreviewAdapter imagePreviewAdapter;
     private List<Uri> selectedImageUris = new ArrayList<>();
+    private User currentUser;
 
     // Sử dụng Photo Picker (Android 13+) để tránh lỗi SecurityException
     private final ActivityResultLauncher<PickVisualMediaRequest> pickMultipleMedia =
@@ -58,6 +67,8 @@ public class PostFragment extends Fragment {
         btnSubmitPost = view.findViewById(R.id.btnSubmitPost);
         btnUploadImage = view.findViewById(R.id.btnUploadImage);
         rvImages = view.findViewById(R.id.rvImages);
+        imgAvatar = view.findViewById(R.id.ivAvatar);
+        tvUsername = view.findViewById(R.id.tvUsername);
 
         // Thiết lập RecyclerView cho ảnh preview
         rvImages.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
@@ -66,6 +77,12 @@ public class PostFragment extends Fragment {
 
         btnUploadImage.setOnClickListener(v -> openGallery());
         btnSubmitPost.setOnClickListener(v -> createPost());
+
+        currentUser = UserManager.getInstance(requireContext()).getUser();
+        if (currentUser != null) {
+            tvUsername.setText("@"+currentUser.getUsername());
+            Glide.with(this).load(currentUser.getAvatarUrl()).into(imgAvatar);
+        }
 
         return view;
     }

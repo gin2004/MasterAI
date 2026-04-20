@@ -37,7 +37,7 @@
                     android:textColor="@color/white"
                     app:backgroundTint="#A066FF"
                     app:cornerRadius="24dp"
-                    app:icon="@android:drawable/ic_menu_gallery"
+                    app:icon="@drawable/ic_image"
                     app:iconSize="18dp" />
 
                 <com.google.android.material.button.MaterialButton
@@ -51,7 +51,7 @@
                     android:textColor="#757575"
                     app:backgroundTint="#F5F5F5"
                     app:cornerRadius="24dp"
-                    app:icon="@android:drawable/ic_menu_myplaces"
+                    app:icon="@drawable/ic_avatar"
                     app:iconSize="18dp" />
 
                 <com.google.android.material.button.MaterialButton
@@ -65,7 +65,7 @@
                     android:textColor="#757575"
                     app:backgroundTint="#F5F5F5"
                     app:cornerRadius="24dp"
-                    app:icon="@android:drawable/ic_btn_speak_now"
+                    app:icon="@drawable/ic_speech"
                     app:iconSize="18dp" />
             </LinearLayout>
         </HorizontalScrollView>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout>
-    <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="12dp"
@@ -128,11 +128,12 @@
                     android:paddingHorizontal="10dp"
                     android:paddingVertical="6dp"
                     android:gravity="center_vertical">
+
                     <ImageView
                         android:id="@+id/ivLike"
                         android:layout_width="16dp"
-                        android:layout_height="16dp"
-                        android:src="@android:drawable/btn_star_big_on"
+                        android:layout_height="18dp"
+                        android:src="@drawable/ic_like"
                         app:tint="@color/gray_text" />
                     <TextView
                         android:id="@+id/tvLikeCount"
@@ -155,7 +156,7 @@
                     <ImageView
                         android:layout_width="16dp"
                         android:layout_height="16dp"
-                        android:src="@drawable/ic_nav_message"
+                        android:src="@drawable/ic_comment"
                         app:tint="@color/gray_text" />
                     <TextView
                         android:id="@+id/tvCommentCount"

@@ -28,6 +28,7 @@ import com.example.masterai.model.Generation;
 import com.example.masterai.model.GenerationResponse;
 import com.example.masterai.model.ImageResponse;
 import com.example.masterai.model.PromptResponse;
+import com.example.masterai.utils.UserManager;
 import com.example.masterai.utils.ViewsUtils;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
@@ -57,8 +58,9 @@ public class ImageFragment extends Fragment {
     private String imageLink;
     private GenerationAdapter generationAdapter;
     private AssetAdapter assetAdapter;
-    String user_id = "c7f8bca5-6201-41ad-911b-e47636f85d27";
+    String user_id = null;
     private ImageResponse imageResponse;
+    private String currentGenerationId;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -66,7 +68,8 @@ public class ImageFragment extends Fragment {
         // Inflate the layout for this fragment
         binding = FragmentImageBinding.inflate(inflater, container, false);
         initViews();
-        
+
+        user_id = UserManager.getInstance(requireContext()).getUser().getId();
         // Chỉ load data lần đầu tiên
         fetchGenerations(0);
         fetchAssets();
@@ -86,6 +89,12 @@ public class ImageFragment extends Fragment {
 
         rvGenerations.setAdapter(generationAdapter);
         rvAssets.setAdapter(assetAdapter);
+
+        assetAdapter.setOnItemClickListener(asset -> {
+            if (asset.getPrompt() != null) {
+                binding.etPrompt.setText(asset.getPrompt());
+            }
+        });
         
         binding.swipeRefresh.setOnRefreshListener(() -> {
             fetchGenerations(0);
@@ -225,33 +234,28 @@ public class ImageFragment extends Fragment {
     }
 
     private void saveAsset() {
-
-        if(imageLink!=null && !imageLink.isEmpty() && imageResponse!= null){
-            RetrofitClient.getApiService().addAsset(user_id,imageResponse.generation_id).enqueue(new Callback<ResponseBody>() {
+        if(currentGenerationId != null){
+            RetrofitClient.getApiService().addAsset(user_id, currentGenerationId).enqueue(new Callback<ResponseBody>() {
                 @Override
                 public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                     if(response.isSuccessful()){
-                        String json = null; // Lấy chuỗi JSON thô
+                        String json = null;
                         try {
                             json = response.body().string();
-                            // Dùng JSONObject để kiểm tra một trường đặc trưng nào đó
                             JSONObject jsonObject = new JSONObject(json);
                             if(jsonObject.has("message")){
                                 Toast.makeText(requireContext(), jsonObject.optString("message"), Toast.LENGTH_SHORT).show();
+                                fetchAssets(); // Cập nhật lại danh sách asset
                             }
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        } catch (JSONException e) {
-                            throw new RuntimeException(e);
+                        } catch (IOException | JSONException e) {
+                            e.printStackTrace();
                         }
-
                     }
                 }
 
                 @Override
                 public void onFailure(Call<ResponseBody> call, Throwable t) {
                     Toast.makeText(requireContext(), "Không thể thêm", Toast.LENGTH_SHORT).show();
-
                 }
             });
         }
@@ -291,6 +295,7 @@ public class ImageFragment extends Fragment {
                         if (response.isSuccessful() && response.body() != null) {
                             ImageResponse data = response.body();
                             imageResponse = data;
+                            currentGenerationId = data.generation_id;
                             if (data.media_url != null && !data.media_url.isEmpty()) {
                                 imageLink = data.media_url;
                                 showResultBottomSheet(data.media_url);
@@ -319,20 +324,27 @@ public class ImageFragment extends Fragment {
     private void setupAssetsList(List<Asset> assets) {
         assetAdapter = new AssetAdapter(assets);
         assetAdapter.setLoading(false);
+        assetAdapter.setOnItemClickListener(asset -> {
+            if (asset.getPrompt() != null) {
+                binding.etPrompt.setText(asset.getPrompt());
+            }
+        });
         rvAssets.setAdapter(assetAdapter);
     }
 
     private void setupGenerationsList(List<Generation> gens) {
         generationAdapter = new GenerationAdapter(gens);
         generationAdapter.setLoading(false);
+        generationAdapter.setOnItemClickListener(generation -> {
+            currentGenerationId = generation.getId();
+            imageLink = generation.getMediaUrl();
+            showResultBottomSheet(generation.getMediaUrl());
+        });
         rvGenerations.setAdapter(generationAdapter);
     }
     private void fetchGenerations(int page) {
-        String userId = "c7f8bca5-6201-41ad-911b-e47636f85d27"; // ID User từ Auth
         String type = "image";
-
-        // Gọi API lấy lịch sử (Page mặc định là 1, limit là 10)
-        RetrofitClient.getApiService().getGenerations(userId, type, page, 10)
+        RetrofitClient.getApiService().getGenerations(user_id, type, page, 10)
                 .enqueue(new Callback<GenerationResponse>() {
                     @Override
                     public void onResponse(Call<GenerationResponse> call, Response<GenerationResponse> response) {
@@ -350,10 +362,9 @@ public class ImageFragment extends Fragment {
                 });
     }
     private void fetchAssets() {
-        String userId = "c7f8bca5-6201-41ad-911b-e47636f85d27";
         String type = "image";
 
-        RetrofitClient.getApiService().getAssets(userId, type)
+        RetrofitClient.getApiService().getAssets(user_id, type)
                 .enqueue(new Callback<AssetResponse>() {
                     @Override
                     public void onResponse(Call<AssetResponse> call, Response<AssetResponse> response) {

@@ -86,7 +86,7 @@ public class PostDetailActivity extends AppCompatActivity {
                     if (response.isSuccessful() && response.body() != null) {
                         User user = response.body();
                         binding.includePost.tvUserName.setText(user.getUsername());
-                        Glide.with(PostDetailActivity.this)
+                        Glide.with(binding.includePost.ivAvatar)
                                 .load(user.getAvatarUrl())
                                 .circleCrop()
                                 .into(binding.includePost.ivAvatar);

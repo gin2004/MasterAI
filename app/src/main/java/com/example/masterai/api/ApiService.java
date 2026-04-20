@@ -122,6 +122,18 @@ public interface ApiService {
 
     @PATCH("api/posts/{id}/update/")
     Call<Post> updatePost(@Path("id") String postId, @Body Map<String, Object> body);
+    @GET("api/posts/user/{user_id}/")
+    Call<PaginatedPostResponse<Post>> getUserPosts(
+            @Path("user_id") String userId,
+            @Query("page") int page,            // Truyền số trang
+            @Query("page_size") Integer pageSize // Có thể null để dùng default của backend
+    );
+    @GET("api/posts/user/{user_id}/likes")
+    Call<PaginatedPostResponse<Post>> getLikedUserPosts(
+            @Path("user_id") String userId,
+            @Query("page") int page,            // Truyền số trang
+            @Query("page_size") Integer pageSize // Có thể null để dùng default của backend
+    );
 
     // 🔔 NOTIFICATIONS
     @GET("api/notifications/")
@@ -132,12 +144,7 @@ public interface ApiService {
 
     @PATCH("api/notifications/{id}/read/")
     Call<Notification> markAsRead(@Path("id") String notificationId);
-    @GET("api/posts/user/{user_id}/")
-    Call<PaginatedPostResponse<Post>> getUserPosts(
-            @Path("user_id") String userId,
-            @Query("page") int page,            // Truyền số trang (vd: 1, 2)
-            @Query("page_size") Integer pageSize // Có thể null để dùng default của backend
-    );
+
 
 
     // chat service

@@ -25,7 +25,7 @@
         app:elevation="12dp"
         app:menu="@menu/bottom_nav_menu"
         app:labelVisibilityMode="unlabeled"
-        app:itemIconTint="@color/bottom_nav_color"
+        app:itemIconTint="@null"
         app:itemIconSize="26dp"
         app:itemRippleColor="@color/purple_light"
         app:itemPaddingTop="0dp"

@@ -226,7 +226,7 @@
                                 <ImageView
                                     android:layout_width="18dp"
                                     android:layout_height="18dp"
-                                    android:src="@android:drawable/ic_menu_report_image"
+                                    android:src="@drawable/ic_image"
                                     app:tint="#A066FF" />
 
                                 <TextView
@@ -265,7 +265,7 @@
                     <ImageView
                         android:layout_width="20dp"
                         android:layout_height="20dp"
-                        android:src="@android:drawable/ic_menu_myplaces"
+                        android:src="@drawable/ic_asset"
                         app:tint="#333333" />
 
                     <TextView

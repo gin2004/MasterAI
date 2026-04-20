@@ -68,7 +68,7 @@ public class ProfileFragment extends Fragment {
             if (position == 0) {
                 return ProfileUserPostFragment.newInstance(currentUser.getId());
             }
-            return new ProfileLikeFragment();
+            return ProfileLikeFragment.newInstance(currentUser.getId());
         }
 
         @Override

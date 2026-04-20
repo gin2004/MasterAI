@@ -17,8 +17,7 @@
         android:layout_height="24dp"
         android:layout_gravity="top|end"
         android:background="@android:color/transparent"
-        android:src="@android:drawable/ic_menu_close_clear_cancel"
-        android:backgroundTint="@color/white"
-        android:tint="@color/red_dot" />
+        android:src="@drawable/ic_cross"
+        android:tint="#5D5D5D" />
 
 </FrameLayout>

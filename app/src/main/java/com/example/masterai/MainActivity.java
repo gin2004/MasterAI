@@ -1,9 +1,16 @@
 package com.example.masterai;
 
 import android.annotation.SuppressLint;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
+
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -11,6 +18,9 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.CustomTarget;
+import com.bumptech.glide.request.transition.Transition;
 import com.example.masterai.api.RetrofitClient;
 import com.example.masterai.model.User;
 import com.example.masterai.ui.ai.GenerateFragment;
@@ -38,9 +48,8 @@ public class MainActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
-
-        initView();
         bottomNav = findViewById(R.id.bottomNav);
+        initView();
 
         View mainView = findViewById(R.id.main);
         if (mainView != null) {
@@ -88,6 +97,7 @@ public class MainActivity extends AppCompatActivity {
     private void initView() {
         currentUser = UserManager.getInstance(this).getUser();
         loadUser();
+
     }
 
     private void loadUser() {
@@ -97,6 +107,8 @@ public class MainActivity extends AppCompatActivity {
                 if(response.isSuccessful() && response.body() != null){
                     User user = response.body();
                     UserManager.getInstance(MainActivity.this).setUser(user);
+                    currentUser = user;
+                    setUpBottomNav();
                 }
             }
 
@@ -106,6 +118,43 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+    @SuppressLint("RestrictedApi")
+    private void setUpBottomNav() {
+        if (currentUser == null || currentUser.getAvatarUrl() == null || bottomNav == null) return;
+
+        bottomNav.post(() -> {
+            BottomNavigationMenuView menuView = (BottomNavigationMenuView) bottomNav.getChildAt(0);
+            BottomNavigationItemView itemView = menuView.findViewById(R.id.btnProfile);
+
+            if (itemView != null) {
+                // Tắt tint để hiển thị màu thật của ảnh đại diện
+                itemView.setIconTintList(null);
+
+                Glide.with(this)
+                        .asBitmap()
+                        .load(currentUser.getAvatarUrl())
+                        .placeholder(R.drawable.ic_nav_profile)
+                        .circleCrop()
+                        .into(new CustomTarget<Bitmap>() {
+                            @Override
+                            public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
+                                MenuItem item = bottomNav.getMenu().findItem(R.id.btnProfile);
+                                if (item != null) {
+                                    item.setIcon(new BitmapDrawable(getResources(), resource));
+                                }
+                            }
+
+                            @Override
+                            public void onLoadCleared(@Nullable Drawable placeholder) {
+                                MenuItem item = bottomNav.getMenu().findItem(R.id.btnProfile);
+                                if (item != null) item.setIcon(placeholder);
+                            }
+                        });
+            }
+        });
+    }
+
     @SuppressLint("RestrictedApi")
     private void updateBottomNavScale(int selectedItemId) {
         BottomNavigationMenuView menuView = (BottomNavigationMenuView) bottomNav.getChildAt(0);

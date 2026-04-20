@@ -1,5 +1,6 @@
 package com.example.masterai.ui.profile;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,6 +17,7 @@ import com.example.masterai.databinding.FragmentProfileLikeBinding;
 import com.example.masterai.model.PaginatedPostResponse;
 import com.example.masterai.model.Post;
 import com.example.masterai.model.User;
+import com.example.masterai.ui.comminity.PostDetailActivity;
 import com.example.masterai.utils.UserManager;
 
 import java.util.ArrayList;
@@ -30,21 +32,31 @@ public class ProfileLikeFragment extends Fragment {
     private FragmentProfileLikeBinding binding;
     private List<Post> likedPosts = new ArrayList<>();
     private PostUserAdapter adapter;
-    private String userId;
+    private String userId = null;
 
     public ProfileLikeFragment() {
-        userId = UserManager.getInstance(requireContext()).getUser().getId();
     }
 
-    public ProfileLikeFragment(String userId) {
-        this.userId = userId;
+    public static ProfileLikeFragment newInstance(String userId) {
+        ProfileLikeFragment fragment = new ProfileLikeFragment();
+        Bundle args = new Bundle();
+        args.putString("USER_ID", userId);
+        fragment.setArguments(args); // Nhét data vào "balo" của Fragment
+        return fragment;
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = FragmentProfileLikeBinding.inflate(inflater, container, false);
-        
+
+        if(getArguments() != null){
+            userId = getArguments().getString("USER_ID");
+        }
+
+        if(userId == null ){
+            this.userId = UserManager.getInstance(requireContext()).getUser().getId();
+        }
         setupRecyclerView();
         loadLikedPosts();
         
@@ -55,7 +67,9 @@ public class ProfileLikeFragment extends Fragment {
 
     private void setupRecyclerView() {
         adapter = new PostUserAdapter(likedPosts, post -> {
-            // Xử lý khi click vào bài viết
+            Intent intent = new Intent(getActivity(), PostDetailActivity.class);
+            intent.putExtra("post", post);
+            startActivity(intent);
         });
         
         binding.rvLikedPosts.setLayoutManager(new GridLayoutManager(getContext(), 3));
@@ -67,7 +81,7 @@ public class ProfileLikeFragment extends Fragment {
 
         adapter.setLoading(true);
 
-        RetrofitClient.getApiService().getUserPosts(userId, 1, 30) // Tạm thời dùng chung demo
+        RetrofitClient.getApiService().getLikedUserPosts(userId, 1, 30) // Tạm thời dùng chung demo
                 .enqueue(new Callback<PaginatedPostResponse<Post>>() {
                     @Override
                     public void onResponse(Call<PaginatedPostResponse<Post>> call, Response<PaginatedPostResponse<Post>> response) {

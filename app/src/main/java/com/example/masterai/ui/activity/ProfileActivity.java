@@ -157,7 +157,7 @@ public class ProfileActivity extends AppCompatActivity {
             if (position == 0) {
                 return ProfileUserPostFragment.newInstance(userId);
             }
-            return new ProfileLikeFragment(userId);
+            return ProfileLikeFragment.newInstance(userId);
         }
 
         @Override

@@ -1,6 +1,7 @@
 package com.example.masterai.ui.comminity;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,11 +15,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
+import com.example.masterai.MainActivity;
 import com.example.masterai.R;
 import com.example.masterai.api.RetrofitClient;
 import com.example.masterai.model.Notification;
 import com.example.masterai.model.Post;
 import com.example.masterai.model.User;
+import com.example.masterai.ui.activity.ProfileActivity;
+import com.example.masterai.ui.profile.ProfileFragment;
 import com.example.masterai.utils.PostUtils;
 import com.example.masterai.utils.UserManager;
 import java.util.ArrayList;
@@ -66,7 +70,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             holder.llMyPostActions.setVisibility(View.VISIBLE);
         } else {
             holder.llMyPostActions.setVisibility(View.GONE);
-
         }
 
         loadUserInfo(holder, post.getUserId(), isMyPost);
@@ -109,6 +112,24 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
                 .addToBackStack(null)
                 .commit();
         });
+
+        // Xử lý sự kiện click vào Avatar hoặc Username
+        View.OnClickListener profileClickListener = v -> {
+            if (currentUser != null && post.getUserId().equals(currentUser.getId())) {
+                // Nếu là bản thân -> Chuyển sang ProfileFragment trong MainActivity
+                if (v.getContext() instanceof MainActivity) {
+                    ((MainActivity) v.getContext()).navigateToProfile();
+                }
+            } else {
+                // Nếu là người khác -> Chuyển sang ProfileActivity
+                Intent intent = new Intent(v.getContext(), ProfileActivity.class);
+                intent.putExtra("user_id", post.getUserId());
+                v.getContext().startActivity(intent);
+            }
+        };
+
+        holder.ivAvatar.setOnClickListener(profileClickListener);
+        holder.tvName.setOnClickListener(profileClickListener);
     }
 
     private void deletePost(String postId, int position, View view) {
@@ -141,6 +162,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         // Optimistic UI update
         int initialLikes = post.getLikeCount();
         
+
         RetrofitClient.getApiService().toggleLike(post.getId(), body).enqueue(new Callback<Map<String, String>>() {
             @Override
             public void onResponse(Call<Map<String, String>> call, Response<Map<String, String>> response) {
@@ -160,6 +182,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
                         holder.tvLikeCount.setText(String.valueOf(post.getLikeCount()));
                         holder.ivLike.setColorFilter(holder.itemView.getContext().getColor(R.color.gray_text));
                     }
+                    holder.tvLikeCount.setText(String.valueOf(post.getLikeCount()));
                 }
             }
             @Override

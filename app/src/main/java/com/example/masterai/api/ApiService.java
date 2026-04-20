@@ -12,7 +12,10 @@ import com.example.masterai.model.LoginResponse;
 import com.example.masterai.model.PaginatedPostResponse;
 import com.example.masterai.model.Post;
 import com.example.masterai.model.PromptResponse;
+import com.example.masterai.model.StatusRequest;
 import com.example.masterai.model.User;
+import com.example.masterai.model.UserMessage;
+import com.example.masterai.model.Message;
 
 import java.util.List;
 
@@ -124,5 +127,23 @@ public interface ApiService {
             @Path("user_id") String userId,
             @Query("page") int page,            // Truyền số trang (vd: 1, 2)
             @Query("page_size") Integer pageSize // Có thể null để dùng default của backend
+    );
+
+
+    // chat service
+
+    // Cập nhật trạng thái Online / Offline
+    @POST("api/chat/status/")
+    Call<ResponseBody> updateOnlineStatus(@Body StatusRequest request);
+
+    // Lấy danh sách những người đã nhắn tin (Inbox)
+    @GET("api/chat/inbox/{user_id}/")
+    Call<List<UserMessage>> getInbox(@Path("user_id") String userId);
+
+    // Lấy lịch sử chat của 2 người
+    @GET("api/chat/history/{my_id}/{target_id}/")
+    Call<List<Message>> getChatHistory(
+            @Path("my_id") String myId,
+            @Path("target_id") String targetId
     );
 }

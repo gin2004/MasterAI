@@ -12,13 +12,14 @@ import okhttp3.WebSocketListener;
 
 public class ChatWebSocketClient {
     private WebSocket webSocket;
-    private final String SERVER_URL = "ws://192.168.99.102:8000/ws/chat/"; // Đổi IP nếu dùng điện thoại thật
+    private final String SERVER_URL = "ws://172.17.61.96:8000/ws/chat/";
     private ChatMessageListener listener;
 
     // Interface để truyền dữ liệu về Activity/Fragment
     public interface ChatMessageListener {
         void onMessageReceived(String message, String senderId, String timestamp);
         void onConnectionClosed();
+        void onPresenceReceived(String userId, boolean isOnline);
     }
     public ChatWebSocketClient(ChatMessageListener listener) {
         this.listener = listener;
@@ -28,7 +29,7 @@ public class ChatWebSocketClient {
     public void connect(String myId, String targetId) {
         OkHttpClient client = new OkHttpClient();
 
-        // Tạo URL chuẩn với cấu trúc backend: ws://.../ws/chat/my_id/target_id/
+        //URL chuẩn với cấu trúc backend: ws://.../ws/chat/my_id/target_id/
         String url = SERVER_URL + myId + "/" + targetId + "/";
         Request request = new Request.Builder().url(url).build();
 
@@ -43,7 +44,8 @@ public class ChatWebSocketClient {
                 Log.d("WebSocket", "Nhận được: " + text);
                 try {
                     JSONObject json = new JSONObject(text);
-                    if (json.getString("type").equals("chat")) {
+                    String type = json.getString("type");
+                    if (type.equals("chat")) {
                         String message = json.getString("message");
                         String senderId = json.getString("sender_id");
                         String timestamp = json.getString("timestamp");
@@ -51,6 +53,13 @@ public class ChatWebSocketClient {
                         // Báo cho Activity biết có tin nhắn mới
                         if (listener != null) {
                             listener.onMessageReceived(message, senderId, timestamp);
+                        }
+                    } else if (type.equals("presence")) {
+                        boolean isOnline = json.getBoolean("is_online");
+                        String userId = json.getString("user_id");
+
+                        if (listener != null) {
+                            listener.onPresenceReceived(userId, isOnline);
                         }
                     }
                 } catch (Exception e) {

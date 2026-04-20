@@ -60,7 +60,7 @@ public class UserMessage implements Serializable, Comparable<UserMessage> {
     public String getLastSenderId() { return lastSenderId; }
     public void setLastSenderId(String lastSenderId) { this.lastSenderId = lastSenderId; }
 
-    // --- Tiện ích hiển thị (Helper Methods) ---
+
 
     /**
      * Dùng để sắp xếp danh sách: Ai có tin nhắn mới nhất thì được đẩy lên đầu

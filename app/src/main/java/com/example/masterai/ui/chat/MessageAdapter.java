@@ -73,7 +73,7 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     }
 
     // ==========================================
-    // VIEWHOLDER: TIN NHẮN GỬI ĐI (Bên Phải)
+    // VIEWHOLDER: TIN NHẮN GỬI ĐI -> hiện bên phải
     // ==========================================
     class SentViewHolder extends RecyclerView.ViewHolder {
         private ItemMessageSentBinding binding;

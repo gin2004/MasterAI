@@ -1,10 +1,12 @@
 package com.example.masterai.ui.comminity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.PopupMenu;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -17,6 +19,8 @@ import com.example.masterai.R;
 import com.example.masterai.api.RetrofitClient;
 import com.example.masterai.model.Post;
 import com.example.masterai.model.User;
+import com.example.masterai.ui.login.LoginActivity;
+import com.example.masterai.ui.profile.ProfileFragment;
 import com.example.masterai.utils.UserManager;
 import com.example.masterai.utils.ViewsUtils;
 
@@ -62,7 +66,42 @@ public class CommunityFragment extends Fragment {
     private void initData(View view) {
         ImageView ivUserAvatar = view.findViewById(R.id.ivUserAvatar);
         currentUser = UserManager.getInstance(requireContext()).getUser();
-        Glide.with(requireContext()).load(currentUser.getAvatarUrl()).circleCrop().into(ivUserAvatar);
+        if (currentUser != null) {
+            Glide.with(requireContext()).load(currentUser.getAvatarUrl()).circleCrop().into(ivUserAvatar);
+        }
+
+        ivUserAvatar.setOnClickListener(v -> showAvatarMenu(v));
+    }
+
+    private void showAvatarMenu(View view) {
+        PopupMenu popupMenu = new PopupMenu(requireContext(), view);
+        popupMenu.getMenuInflater().inflate(R.menu.community_avatar_menu, popupMenu.getMenu());
+        popupMenu.setOnMenuItemClickListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.menu_profile) {
+                getParentFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, new ProfileFragment())
+                        .addToBackStack(null)
+                        .commit();
+                return true;
+            } else if (id == R.id.menu_logout) {
+                performLogout();
+                return true;
+            }
+            return false;
+        });
+        popupMenu.show();
+    }
+
+    private void performLogout() {
+        UserManager.getInstance(requireContext()).logout();
+        Toast.makeText(getContext(), "Đã đăng xuất", Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(getActivity(), LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        if (getActivity() != null) {
+            getActivity().finish();
+        }
     }
 
     private void fetchPosts() {

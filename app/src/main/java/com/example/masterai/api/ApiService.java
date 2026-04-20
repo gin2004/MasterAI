@@ -9,6 +9,7 @@ import com.example.masterai.model.GenerationResponse;
 import com.example.masterai.model.ImageResponse;
 import com.example.masterai.model.Comment;
 import com.example.masterai.model.LoginResponse;
+import com.example.masterai.model.Notification;
 import com.example.masterai.model.PaginatedPostResponse;
 import com.example.masterai.model.Post;
 import com.example.masterai.model.PromptResponse;
@@ -122,6 +123,15 @@ public interface ApiService {
     @PATCH("api/posts/{id}/update/")
     Call<Post> updatePost(@Path("id") String postId, @Body Map<String, Object> body);
 
+    // 🔔 NOTIFICATIONS
+    @GET("api/notifications/")
+    Call<List<Notification>> getNotifications(@Query("user_id") String userId);
+
+    @POST("api/notifications/create/")
+    Call<Notification> createNotification(@Body Notification notification);
+
+    @PATCH("api/notifications/{id}/read/")
+    Call<Notification> markAsRead(@Path("id") String notificationId);
     @GET("api/posts/user/{user_id}/")
     Call<PaginatedPostResponse<Post>> getUserPosts(
             @Path("user_id") String userId,

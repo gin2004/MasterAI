@@ -58,10 +58,14 @@ public class EditPostFragment extends Fragment {
                     if (result.getData().getClipData() != null) {
                         ClipData clipData = result.getData().getClipData();
                         for (int i = 0; i < clipData.getItemCount(); i++) {
-                            selectedImageUris.add(clipData.getItemAt(i).getUri());
+                            Uri uri = clipData.getItemAt(i).getUri();
+                            requireContext().getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                            selectedImageUris.add(uri);
                         }
                     } else if (result.getData().getData() != null) {
-                        selectedImageUris.add(result.getData().getData());
+                        Uri uri = result.getData().getData();
+                        requireContext().getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        selectedImageUris.add(uri);
                     }
                     updateImagesVisibility();
                 }
@@ -124,7 +128,8 @@ public class EditPostFragment extends Fragment {
     }
 
     private void openGallery() {
-        Intent intent = new Intent(Intent.ACTION_PICK);
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("image/*");
         intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
         pickImageLauncher.launch(intent);

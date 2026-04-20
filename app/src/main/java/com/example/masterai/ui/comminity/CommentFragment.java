@@ -18,6 +18,7 @@ import com.example.masterai.MainActivity;
 import com.example.masterai.R;
 import com.example.masterai.api.RetrofitClient;
 import com.example.masterai.model.Comment;
+import com.example.masterai.model.Notification;
 import com.example.masterai.model.User;
 import com.example.masterai.utils.UserManager;
 import java.util.ArrayList;
@@ -33,6 +34,7 @@ public class CommentFragment extends Fragment {
     private RecyclerView rvComments;
     private CommentAdapter adapter;
     private String postId;
+    private String postUserId; // ID của chủ bài viết
     private EditText etComment;
     private ImageView btnSend;
 
@@ -43,6 +45,7 @@ public class CommentFragment extends Fragment {
         
         if (getArguments() != null) {
             postId = getArguments().getString("post_id");
+            postUserId = getArguments().getString("post_user_id");
         }
 
         if (getActivity() instanceof MainActivity) {
@@ -107,16 +110,20 @@ public class CommentFragment extends Fragment {
         Map<String, Object> body = new HashMap<>();
         body.put("user_id", currentUser.getId());
         body.put("content", content);
-        body.put("parent", null); // Có thể mở rộng để reply sau này
+        body.put("parent", null);
 
         RetrofitClient.getApiService().addComment(postId, body).enqueue(new Callback<Comment>() {
             @Override
             public void onResponse(Call<Comment> call, Response<Comment> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     etComment.setText("");
-                    // Tải lại danh sách bình luận sau khi đăng thành công
                     fetchComments();
                     Toast.makeText(getContext(), "Đã gửi bình luận", Toast.LENGTH_SHORT).show();
+                    
+                    // Gửi thông báo cho chủ bài viết
+                    if (postUserId != null && !postUserId.equals(currentUser.getId())) {
+                        sendNotification(postUserId, currentUser.getUsername() + " đã bình luận bài viết của bạn: " + content, "comment");
+                    }
                 } else {
                     Toast.makeText(getContext(), "Lỗi: " + response.code(), Toast.LENGTH_SHORT).show();
                 }
@@ -126,6 +133,16 @@ public class CommentFragment extends Fragment {
             public void onFailure(Call<Comment> call, Throwable t) {
                 Toast.makeText(getContext(), "Lỗi kết nối", Toast.LENGTH_SHORT).show();
             }
+        });
+    }
+
+    private void sendNotification(String recipientId, String content, String type) {
+        Notification notification = new Notification(recipientId, content, type);
+        RetrofitClient.getApiService().createNotification(notification).enqueue(new Callback<Notification>() {
+            @Override
+            public void onResponse(Call<Notification> call, Response<Notification> response) {}
+            @Override
+            public void onFailure(Call<Notification> call, Throwable t) {}
         });
     }
 

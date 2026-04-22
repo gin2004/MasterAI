@@ -8,6 +8,7 @@ material = "1.13.0"
 activity = "1.13.0"
 constraintlayout = "2.2.1"
 shimmer = "0.5.0"
+commonsIo = "2.16.1"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -18,6 +19,7 @@ material = { group = "com.google.android.material", name = "material", version.r
 activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 shimmer = { group = "com.facebook.shimmer", name = "shimmer", version.ref = "shimmer" }
+commons-io = { group = "commons-io", name = "commons-io", version.ref = "commonsIo" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

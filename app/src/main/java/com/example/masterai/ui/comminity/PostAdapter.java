@@ -160,6 +160,8 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         if (currentUser == null) return;
         Map<String, String> body = new HashMap<>();
         body.put("user_id", currentUser.getId());
+        body.put("username", currentUser.getUsername()); // Thêm dòng này
+        body.put("avatar", currentUser.getAvatarUrl());     // Thêm dòng này
         
         int initialLikes = post.getLikeCount();
 

@@ -29,10 +29,28 @@ public class ImagePreviewAdapter extends RecyclerView.Adapter<ImagePreviewAdapte
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Uri uri = imageUris.get(position);
-        Glide.with(holder.itemView.getContext()).load(uri).into(holder.ivPreview);
+        Glide.with(holder.itemView.getContext())
+                .load(uri)
+                .centerCrop() // Thêm để ảnh hiển thị gọn trong khung
+                .into(holder.ivPreview);
+
         holder.btnRemove.setOnClickListener(v -> {
-            imageUris.remove(position);
-            notifyDataSetChanged();
+            // Lấy vị trí hiện tại thực tế của holder
+            int currentPosition = holder.getBindingAdapterPosition();
+
+            // Kiểm tra tránh lỗi IndexOutOfBoundsException
+            if (currentPosition != RecyclerView.NO_POSITION) {
+                imageUris.remove(currentPosition);
+
+                // Dùng notifyItemRemoved sẽ tạo hiệu ứng xóa mượt mà hơn notifyDataSetChanged
+                notifyItemRemoved(currentPosition);
+                notifyItemRangeChanged(currentPosition, imageUris.size());
+
+                // Gọi callback nếu bạn cần thông báo cho Fragment (ví dụ: ẩn RecyclerView nếu hết ảnh)
+                if (onImageRemovedListener != null) {
+                    onImageRemovedListener.onRemoved();
+                }
+            }
         });
     }
 
@@ -50,5 +68,12 @@ public class ImagePreviewAdapter extends RecyclerView.Adapter<ImagePreviewAdapte
             ivPreview = itemView.findViewById(R.id.ivPreview);
             btnRemove = itemView.findViewById(R.id.btnRemove);
         }
+    }public interface OnImageRemovedListener {
+        void onRemoved();
     }
+    private OnImageRemovedListener onImageRemovedListener;
+    public void setOnImageRemovedListener(OnImageRemovedListener listener) {
+        this.onImageRemovedListener = listener;
+    }
+
 }

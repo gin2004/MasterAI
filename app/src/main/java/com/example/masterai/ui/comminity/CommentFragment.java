@@ -105,6 +105,8 @@ public class CommentFragment extends Fragment {
 
         Map<String, Object> body = new HashMap<>();
         body.put("user_id", currentUser.getId());
+        body.put("username", currentUser.getUsername()); // Thêm dòng này
+        body.put("avatar", currentUser.getAvatarUrl());     // Thêm dòng này
         body.put("content", content);
         body.put("parent", null);
 

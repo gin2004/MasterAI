@@ -1,8 +1,12 @@
 package com.example.masterai.ui.comminity;
 
+import android.content.ContentResolver;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,8 +35,15 @@ import com.example.masterai.utils.UserManager;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.imageview.ShapeableImageView;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -111,53 +122,101 @@ public class PostFragment extends Fragment {
             return;
         }
 
-        User currentUser = UserManager.getInstance(requireContext()).getUser();
         if (currentUser == null) {
             Toast.makeText(getContext(), "Bạn cần đăng nhập để đăng bài", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        Post post = new Post();
-        post.setUserId(currentUser.getId());
-        post.setContent(content);
-        post.setVisibility("public");
+        // --- MỚI: Vô hiệu hóa nút để tránh gửi trùng ---
+        btnSubmitPost.setEnabled(false);
+        Log.d("UPLOAD_DEBUG", "Bắt đầu chuẩn bị dữ liệu...");
 
-        // Chuyển đổi danh sách Uri thành danh sách Media
-        List<Media> mediaList = new ArrayList<>();
+        // 1. Chuẩn bị các dữ liệu text
+        RequestBody rbUserId = createPartFromString(currentUser.getId());
+        RequestBody rbContent = createPartFromString(content);
+        RequestBody rbVisibility = createPartFromString("public");
+
+        // 2. Chuẩn bị danh sách files
+        List<MultipartBody.Part> fileParts = new ArrayList<>();
         for (Uri uri : selectedImageUris) {
-            Media media = new Media();
-            // Cấp quyền đọc bền vững cho URI nếu cần (thường dùng khi lưu vào DB)
-            try {
-                requireContext().getContentResolver().takePersistableUriPermission(uri, 
-                        android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            } catch (SecurityException e) {
-                // Photo picker thường không hỗ trợ persistable permissions cho mọi provider
-                // nhưng nó tự cấp quyền tạm thời cho lifecycle của app
+            MultipartBody.Part part = prepareFilePart("files", uri);
+            if (part != null) {
+                fileParts.add(part);
             }
-            media.setUrl(uri.toString()); 
-            media.setMediaType("image");
-            media.setSource("upload");
-            mediaList.add(media);
         }
-        post.setMedia(mediaList);
 
-        RetrofitClient.getApiService().createPost(post).enqueue(new Callback<Post>() {
-            @Override
-            public void onResponse(Call<Post> call, Response<Post> response) {
-                if (response.isSuccessful()) {
-                    Toast.makeText(getContext(), "Đăng bài thành công!", Toast.LENGTH_SHORT).show();
-                    if (getActivity() instanceof MainActivity) {
-                        ((MainActivity) getActivity()).navigateToCommunity();
+        Log.d("UPLOAD_DEBUG", "Số lượng file chuẩn bị xong: " + fileParts.size());
+
+        // 3. Gọi API
+        RetrofitClient.getApiService().createPost(rbUserId, rbContent, rbVisibility, fileParts)
+                .enqueue(new Callback<Post>() {
+                    @Override
+                    public void onResponse(Call<Post> call, Response<Post> response) {
+                        btnSubmitPost.setEnabled(true); // Kích hoạt lại nút
+                        if (response.isSuccessful()) {
+                            Log.d("UPLOAD_DEBUG", "Thành công!");
+                            Toast.makeText(getContext(), "Đăng bài thành công!", Toast.LENGTH_SHORT).show();
+
+                            etPostContent.setText("");
+                            selectedImageUris.clear();
+                            updateImagesVisibility();
+
+                            if (getActivity() instanceof MainActivity) {
+                                ((MainActivity) getActivity()).navigateToCommunity();
+                            }
+                        } else {
+                            // MỚI: Log chi tiết lỗi từ server
+                            try {
+                                String errorBody = response.errorBody().string() != null ? response.errorBody().string() : "No error body";
+                                Log.e("UPLOAD_DEBUG", "Lỗi server (" + response.code() + "): " + errorBody);
+                            } catch (IOException e) { e.printStackTrace(); }
+
+                            Toast.makeText(getContext(), "Lỗi server: " + response.code(), Toast.LENGTH_SHORT).show();
+                        }
                     }
-                } else {
-                    Toast.makeText(getContext(), "Lỗi server: " + response.code(), Toast.LENGTH_SHORT).show();
-                }
-            }
 
-            @Override
-            public void onFailure(Call<Post> call, Throwable t) {
-                Toast.makeText(getContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
+                    @Override
+                    public void onFailure(Call<Post> call, Throwable t) {
+                        btnSubmitPost.setEnabled(true);
+                        Log.e("UPLOAD_DEBUG", "Kết nối thất bại: " + t.getMessage());
+                        Toast.makeText(getContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+    private MultipartBody.Part prepareFilePart(String partName, Uri fileUri) {
+        try {
+            ContentResolver contentResolver = requireContext().getContentResolver();
+            // Lấy tên file thực tế
+            String fileName = "upload_" + System.currentTimeMillis() + ".jpg";
+
+            InputStream inputStream = contentResolver.openInputStream(fileUri);
+            if (inputStream == null) return null;
+
+            // Đọc bytes
+            byte[] bytes = getBytes(inputStream);
+
+            RequestBody requestFile = RequestBody.create(
+                    MediaType.parse(contentResolver.getType(fileUri)),
+                    bytes
+            );
+
+            return MultipartBody.Part.createFormData(partName, fileName, requestFile);
+        } catch (Exception e) {
+            Log.e("UPLOAD_ERR", "Error preparing file: " + e.getMessage());
+            return null;
+        }
+    }
+
+    // Hàm hỗ trợ đọc bytes không cần thư viện ngoài
+    public byte[] getBytes(InputStream inputStream) throws IOException {
+        Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        // Nén chất lượng xuống 70-80% là đủ đẹp để hiển thị trên app
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 80, outputStream);
+        return outputStream.toByteArray();
+    }
+    private RequestBody createPartFromString(String descriptionString) {
+        if (descriptionString == null) descriptionString = "";
+        return RequestBody.create(MultipartBody.FORM, descriptionString);
     }
 }

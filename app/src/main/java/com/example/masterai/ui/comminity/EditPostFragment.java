@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +14,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -24,11 +26,18 @@ import com.example.masterai.R;
 import com.example.masterai.api.RetrofitClient;
 import com.example.masterai.model.Media;
 import com.example.masterai.model.Post;
+
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -51,26 +60,13 @@ public class EditPostFragment extends Fragment {
         return fragment;
     }
 
-    private final ActivityResultLauncher<Intent> pickImageLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
-                    if (result.getData().getClipData() != null) {
-                        ClipData clipData = result.getData().getClipData();
-                        for (int i = 0; i < clipData.getItemCount(); i++) {
-                            Uri uri = clipData.getItemAt(i).getUri();
-                            requireContext().getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                            selectedImageUris.add(uri);
-                        }
-                    } else if (result.getData().getData() != null) {
-                        Uri uri = result.getData().getData();
-                        requireContext().getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                        selectedImageUris.add(uri);
-                    }
+    private final ActivityResultLauncher<PickVisualMediaRequest> pickMultipleMedia =
+            registerForActivityResult(new ActivityResultContracts.PickMultipleVisualMedia(5), uris -> {
+                if (!uris.isEmpty()) {
+                    selectedImageUris.addAll(uris);
                     updateImagesVisibility();
                 }
-            }
-    );
+            });
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -128,11 +124,9 @@ public class EditPostFragment extends Fragment {
     }
 
     private void openGallery() {
-        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("image/*");
-        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-        pickImageLauncher.launch(intent);
+        pickMultipleMedia.launch(new PickVisualMediaRequest.Builder()
+                .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
+                .build());
     }
 
     private void updateImagesVisibility() {
@@ -152,34 +146,102 @@ public class EditPostFragment extends Fragment {
             return;
         }
 
-        Map<String, Object> body = new HashMap<>();
-        body.put("content", content);
+        btnUpdatePost.setEnabled(false);
 
-        List<Map<String, String>> mediaData = new ArrayList<>();
+        // 1. Chuẩn bị dữ liệu text
+        RequestBody rbContent = createPartFromString(content);
+        RequestBody rbVisibility = createPartFromString("public");
+
+        // 2. PHÂN LOẠI ẢNH
+        List<MultipartBody.Part> keptMediaParts = new ArrayList<>();
+        List<MultipartBody.Part> newFileParts = new ArrayList<>();
+
         for (Uri uri : selectedImageUris) {
-            Map<String, String> m = new HashMap<>();
-            m.put("url", uri.toString());
-            m.put("media_type", "image");
-            m.put("source", "upload");
-            mediaData.add(m);
-        }
-        body.put("media", mediaData);
+            String uriString = uri.toString();
 
-        RetrofitClient.getApiService().updatePost(postToEdit.getId(), body).enqueue(new Callback<Post>() {
-            @Override
-            public void onResponse(Call<Post> call, Response<Post> response) {
-                if (response.isSuccessful()) {
-                    Toast.makeText(getContext(), "Cập nhật thành công!", Toast.LENGTH_SHORT).show();
-                    getParentFragmentManager().popBackStack();
-                } else {
-                    Toast.makeText(getContext(), "Lỗi: " + response.code(), Toast.LENGTH_SHORT).show();
+            if (uriString.startsWith("http")) {
+                // ĐÂY LÀ ẢNH CŨ: Gửi URL về để Backend giữ lại
+                keptMediaParts.add(MultipartBody.Part.createFormData("kept_media", uriString));
+            } else {
+                // ĐÂY LÀ ẢNH MỚI: Nén và tạo Part để upload
+                MultipartBody.Part part = prepareFilePart("files", uri);
+                if (part != null) {
+                    newFileParts.add(part);
                 }
             }
+        }
 
-            @Override
-            public void onFailure(Call<Post> call, Throwable t) {
-                Toast.makeText(getContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
+        // 3. Gọi API
+        RetrofitClient.getApiService().updatePost(postToEdit.getId(), rbContent, rbVisibility, keptMediaParts, newFileParts)
+                .enqueue(new Callback<Post>() {
+                    @Override
+                    public void onResponse(Call<Post> call, Response<Post> response) {
+                        btnUpdatePost.setEnabled(true);
+                        if (response.isSuccessful()) {
+                            Toast.makeText(getContext(), "Cập nhật bài viết thành công!", Toast.LENGTH_SHORT).show();
+                            getParentFragmentManager().popBackStack();
+                        } else {
+                            // In lỗi 413 hoặc lỗi khác để debug
+                            Log.e("EDIT_ERR", "Code: " + response.code());
+                            Toast.makeText(getContext(), "Lỗi server: " + response.code(), Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<Post> call, Throwable t) {
+                        btnUpdatePost.setEnabled(true);
+                        Toast.makeText(getContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+    private RequestBody createPartFromString(String descriptionString) {
+        if (descriptionString == null) descriptionString = "";
+        return RequestBody.create(MultipartBody.FORM, descriptionString);
+    }
+
+    private MultipartBody.Part prepareFilePart(String partName, Uri fileUri) {
+        try {
+            // Kiểm tra nếu là URL ảnh cũ (dành cho EditPostFragment)
+            if (fileUri.toString().startsWith("http")) return null;
+
+            android.content.ContentResolver contentResolver = requireContext().getContentResolver();
+            String fileName = "upload_" + System.currentTimeMillis() + ".jpg";
+
+            InputStream inputStream = contentResolver.openInputStream(fileUri);
+            if (inputStream == null) return null;
+
+            // Gọi hàm getBytes đã có nén ảnh ở trên
+            byte[] bytes = getBytes(inputStream);
+
+            // Đóng stream để giải phóng tài nguyên
+            inputStream.close();
+
+            RequestBody requestFile = RequestBody.create(
+                    MediaType.parse("image/jpeg"), // Sau khi nén bằng JPEG ở getBytes
+                    bytes
+            );
+
+            return MultipartBody.Part.createFormData(partName, fileName, requestFile);
+        } catch (Exception e) {
+            Log.e("UPLOAD_ERR", "Lỗi nén ảnh: " + e.getMessage());
+            return null;
+        }
+    }
+    public byte[] getBytes(InputStream inputStream) throws IOException {
+        // 1. Giải mã InputStream thành Bitmap
+        android.graphics.Bitmap bitmap = android.graphics.BitmapFactory.decodeStream(inputStream);
+
+        // 2. RESIZE: Nếu ảnh rộng hơn 1080px, thu nhỏ nó lại
+        int maxWidth = 1080;
+        if (bitmap.getWidth() > maxWidth) {
+            int newHeight = (int) (bitmap.getHeight() * ((float) maxWidth / bitmap.getWidth()));
+            bitmap = android.graphics.Bitmap.createScaledBitmap(bitmap, maxWidth, newHeight, true);
+        }
+
+        // 3. NÉN CHẤT LƯỢNG: Giảm xuống 70% (mức tối ưu cho di động)
+        java.io.ByteArrayOutputStream outputStream = new java.io.ByteArrayOutputStream();
+        bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 70, outputStream);
+
+        return outputStream.toByteArray();
     }
 }

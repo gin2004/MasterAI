@@ -10,6 +10,7 @@
     <color name="red_dot">#FF4444</color>
 
     <color name="ai_primary">#00BFFF</color>
+    <color name="ai_bottomnavigation">#3800BFFF</color>
 
     <color name="ai_gradient_start">#00E5FF</color>
     <color name="ai_gradient_end">#0077FF</color>
@@ -18,4 +19,24 @@
     <color name="ai_surface">#151C2C</color>
     <color name="ai_border_glow">#4D00BFFF</color>
     <color name="ai_icon_inactive">#8A94A6</color>
+
+    <!-- Preset colors for Audio Covers -->
+    <color name="cover_blue">#E3F2FD</color>
+    <color name="cover_pink">#FCE4EC</color>
+    <color name="cover_green">#E8F5E9</color>
+    <color name="cover_orange">#FFF3E0</color>
+    <color name="cover_purple">#F3E5F5</color>
+    <color name="cover_teal">#E0F2F1</color>
+    <color name="cover_indigo">#E8EAF6</color>
+    <color name="cover_deep_orange">#FBE9E7</color>
+
+    <!-- Darker versions for icons if needed, but we'll use tint -->
+    <color name="tint_blue">#1E88E5</color>
+    <color name="tint_pink">#D81B60</color>
+    <color name="tint_green">#43A047</color>
+    <color name="tint_orange">#FB8C00</color>
+    <color name="tint_purple">#8E24AA</color>
+    <color name="tint_teal">#00897B</color>
+    <color name="tint_indigo">#3949AB</color>
+    <color name="tint_deep_orange">#F4511E</color>
 </resources>

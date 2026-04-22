@@ -34,12 +34,8 @@ import retrofit2.http.POST;
 import retrofit2.http.Part;
 import retrofit2.http.Query;
 import java.util.Map;
-import retrofit2.Call;
-import retrofit2.http.Body;
 import retrofit2.http.DELETE;
-import retrofit2.http.GET;
 import retrofit2.http.PATCH;
-import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Path;
 
@@ -170,5 +166,11 @@ public interface ApiService {
     Call<List<Message>> getChatHistory(
             @Path("my_id") String myId,
             @Path("target_id") String targetId
+    );
+
+    @Multipart
+    @POST("api/chat/upload-image/")
+    Call<ImageResponse> uploadChatImage(
+            @Part MultipartBody.Part image
     );
 }

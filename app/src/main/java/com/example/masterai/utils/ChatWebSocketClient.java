@@ -12,7 +12,7 @@ import okhttp3.WebSocketListener;
 
 public class ChatWebSocketClient {
     private WebSocket webSocket;
-    private final String SERVER_URL = "ws://172.19.200.204:8000/ws/chat/";
+    private final String SERVER_URL = "ws://192.168.99.102:8000/ws/chat/";
     private ChatMessageListener listener;
 
     // Interface để truyền dữ liệu về Activity/Fragment
@@ -46,11 +46,12 @@ public class ChatWebSocketClient {
                     JSONObject json = new JSONObject(text);
                     String type = json.getString("type");
                     if (type.equals("chat")) {
-                        String message = json.getString("message");
+                        String message = json.optString("message", "");
                         String senderId = json.getString("sender_id");
                         String timestamp = json.getString("timestamp");
-
-                        // Báo cho Activity biết có tin nhắn mới
+                        
+                        // Nếu có imageUrl trong JSON nhận được từ server
+                        // Bạn có thể mở rộng interface listener nếu cần xử lý riêng ảnh
                         if (listener != null) {
                             listener.onMessageReceived(message, senderId, timestamp);
                         }
@@ -79,13 +80,28 @@ public class ChatWebSocketClient {
             }
         });
     }
-    // 2. Gửi tin nhắn lên Server
+    
+    // Gửi tin nhắn văn bản
     public void sendMessage(String message) {
         if (webSocket != null) {
             try {
                 JSONObject json = new JSONObject();
                 json.put("message", message);
-                webSocket.send(json.toString()); // Đẩy chuỗi JSON qua Socket
+                webSocket.send(json.toString());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    // Gửi tin nhắn ảnh (Gửi URL ảnh)
+    public void sendImage(String imageUrl) {
+        if (webSocket != null) {
+            try {
+                JSONObject json = new JSONObject();
+                json.put("message", "[Hình ảnh]");
+                json.put("image_url", imageUrl);
+                webSocket.send(json.toString());
             } catch (Exception e) {
                 e.printStackTrace();
             }

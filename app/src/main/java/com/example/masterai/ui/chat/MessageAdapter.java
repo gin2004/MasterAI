@@ -92,13 +92,20 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                 binding.tvMessage.setVisibility(View.VISIBLE);
                 binding.ivMessageImage.setVisibility(View.GONE);
                 binding.tvMessage.setText(message.getText());
+                
+                // Khôi phục background và padding cho tin nhắn text
+                binding.layoutMessage.setBackgroundResource(R.drawable.bg_message_sent);
+                binding.layoutMessage.setPadding(dpToPx(10), dpToPx(10), dpToPx(10), dpToPx(10));
             } else if (message.getType() == Message.TYPE_IMAGE) {
                 binding.tvMessage.setVisibility(View.GONE);
                 binding.ivMessageImage.setVisibility(View.VISIBLE);
 
+                // Xóa background và padding để ảnh hiển thị "full"
+                binding.layoutMessage.setBackground(null);
+                binding.layoutMessage.setPadding(0, 0, 0, 0);
+
                 Glide.with(context)
                         .load(message.getImageUrl())
-                        .override(600, 600) // Resize để tránh giật lag
                         .into(binding.ivMessageImage);
             }
         }
@@ -130,13 +137,20 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                 binding.tvMessage.setVisibility(View.VISIBLE);
                 binding.ivMessageImage.setVisibility(View.GONE);
                 binding.tvMessage.setText(message.getText());
+
+                // Khôi phục background và padding cho tin nhắn text
+                binding.layoutMessage.setBackgroundResource(R.drawable.bg_message_received);
+                binding.layoutMessage.setPadding(dpToPx(10), dpToPx(10), dpToPx(10), dpToPx(10));
             } else if (message.getType() == Message.TYPE_IMAGE) {
                 binding.tvMessage.setVisibility(View.GONE);
                 binding.ivMessageImage.setVisibility(View.VISIBLE);
 
+                // Xóa background và padding để ảnh hiển thị "full"
+                binding.layoutMessage.setBackground(null);
+                binding.layoutMessage.setPadding(0, 0, 0, 0);
+
                 Glide.with(context)
                         .load(message.getImageUrl())
-                        .override(600, 600)
                         .into(binding.ivMessageImage);
             }
         }
@@ -146,5 +160,10 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     private String formatTime(long timestamp) {
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm", Locale.getDefault());
         return sdf.format(new Date(timestamp));
+    }
+
+    private int dpToPx(int dp) {
+        float density = context.getResources().getDisplayMetrics().density;
+        return Math.round((float) dp * density);
     }
 }

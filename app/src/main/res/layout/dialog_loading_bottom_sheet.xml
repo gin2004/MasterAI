@@ -18,6 +18,13 @@
             android:textSize="18sp"
             android:layout_gravity="center"
             android:textStyle="bold" />
+        <ImageView
+            android:id="@+id/loading"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:layout_gravity="center"
+            android:src="@drawable/gif_loading_image"
+            />
 
         <com.google.android.material.progressindicator.LinearProgressIndicator
             android:id="@+id/progressBar"
@@ -27,8 +34,9 @@
             android:indeterminate="true"
             app:trackThickness="8dp"
             app:trackCornerRadius="4dp"
-            app:indicatorColor="#A066FF"
-            app:trackColor="#F0E0FF" />
+            app:indicatorColor="@color/ai_primary"
+            app:trackColor="#D8FFF9" />
+
 
         <TextView
             android:id="@+id/tvError"

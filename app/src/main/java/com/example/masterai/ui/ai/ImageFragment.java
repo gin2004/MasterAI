@@ -186,6 +186,9 @@ public class ImageFragment extends Fragment {
     private void showLoadingBottomSheet() {
         loadingDialog = new BottomSheetDialog(requireContext(), R.style.BottomSheetDialogTheme);
         View view = getLayoutInflater().inflate(R.layout.dialog_loading_bottom_sheet, null);
+
+        ImageView loading = view.findViewById(R.id.loading);
+        ViewsUtils.load(loading,R.drawable.gif_loading_image);
         loadingDialog.setContentView(view);
         loadingDialog.setCancelable(false);
         loadingDialog.show();
@@ -300,6 +303,7 @@ public class ImageFragment extends Fragment {
                         // Tắt loading ngay lập tức khi có phản hồi
                         if (loadingDialog != null && loadingDialog.isShowing()) {
                             loadingDialog.dismiss();
+                            ViewsUtils.clear();
                         }
 
                         if (response.isSuccessful() && response.body() != null) {

@@ -1,7 +1,10 @@
 package com.example.masterai.ui.ai;
 
+import static com.example.masterai.utils.ViewsUtils.load;
+
 import android.media.AudioAttributes;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.LayoutInflater;
@@ -13,6 +16,10 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.media3.common.MediaItem;
+import androidx.media3.common.Player;
+import androidx.media3.exoplayer.ExoPlayer;
+import androidx.media3.ui.PlayerView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.masterai.R;
@@ -25,6 +32,7 @@ import com.example.masterai.model.Generation;
 import com.example.masterai.model.GenerationResponse;
 import com.example.masterai.utils.HintSliderUtil;
 import com.example.masterai.utils.UserManager;
+import com.example.masterai.utils.ViewsUtils;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import java.io.IOException;
@@ -164,6 +172,8 @@ public class VoiceFragment extends Fragment {
         loadingDialog = new BottomSheetDialog(requireContext());
         DialogLoadingBottomSheetBinding loadingBinding = DialogLoadingBottomSheetBinding.inflate(getLayoutInflater());
         loadingBinding.tvStatus.setText("Đang tạo âm thanh...");
+        ViewsUtils.load(loadingBinding.loading,R.drawable.gif_music);
+        ViewsUtils.play();
         loadingDialog.setContentView(loadingBinding.getRoot());
         loadingDialog.setCancelable(false);
         loadingDialog.show();
@@ -171,6 +181,7 @@ public class VoiceFragment extends Fragment {
 
     private void hideLoadingDialog() {
         if (loadingDialog != null && loadingDialog.isShowing()) {
+            ViewsUtils.clear();
             loadingDialog.dismiss();
         }
     }
@@ -179,6 +190,8 @@ public class VoiceFragment extends Fragment {
         BottomSheetDialog audioDialog = new BottomSheetDialog(requireContext());
         DialogAudioPlayerBottomSheetBinding audioBinding = DialogAudioPlayerBottomSheetBinding.inflate(getLayoutInflater());
         audioDialog.setContentView(audioBinding.getRoot());
+        ViewsUtils.load(audioBinding.animationMusic, R.drawable.gif_music_play);
+
 
         mediaPlayer = new MediaPlayer();
         mediaPlayer.setAudioAttributes(new AudioAttributes.Builder()
@@ -199,6 +212,7 @@ public class VoiceFragment extends Fragment {
             audioBinding.seekBar.setMax(mp.getDuration());
             audioBinding.tvTotalTime.setText(formatTime(mp.getDuration()));
             mp.start();
+            ViewsUtils.play();
             audioBinding.btnPlayPause.setImageResource(android.R.drawable.ic_media_pause);
             startSeekBarUpdate(audioBinding);
         });
@@ -206,9 +220,11 @@ public class VoiceFragment extends Fragment {
         audioBinding.btnPlayPause.setOnClickListener(v -> {
             if (mediaPlayer.isPlaying()) {
                 mediaPlayer.pause();
+                ViewsUtils.pause();
                 audioBinding.btnPlayPause.setImageResource(R.drawable.ic_play_white);
             } else {
                 mediaPlayer.start();
+                ViewsUtils.play();
                 audioBinding.btnPlayPause.setImageResource(R.drawable.ic_pause);
                 startSeekBarUpdate(audioBinding);
             }
@@ -249,6 +265,7 @@ public class VoiceFragment extends Fragment {
             if (mediaPlayer != null) {
                 mediaPlayer.release();
                 mediaPlayer = null;
+                ViewsUtils.clear();
             }
             handler.removeCallbacks(updateSeekBar);
         });

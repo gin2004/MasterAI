@@ -2,6 +2,7 @@ package com.example.masterai.api;
 
 import com.example.masterai.model.Asset;
 import com.example.masterai.model.AssetResponse;
+import com.example.masterai.model.AudioResponse;
 import com.example.masterai.model.FollowRequest;
 import com.example.masterai.model.FollowResponse;
 import com.example.masterai.model.Generation;
@@ -107,7 +108,14 @@ public interface ApiService {
             @Field("user_id") String userId,
             @Field("generation_id") String generationId
     );
-
+    // API Sinh âm thanh
+    @FormUrlEncoded
+    @POST("api/ai/generate-audio/")
+    Call<AudioResponse> generateAudio(
+            @Field("user_id") String userId,
+            @Field("prompt") String prompt
+    );
+    //post
     @POST("api/posts/{id}/like/")
     Call<Map<String, String>> toggleLike(@Path("id") String postId, @Body Map<String, String> body);
 

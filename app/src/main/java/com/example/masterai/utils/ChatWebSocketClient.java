@@ -12,7 +12,7 @@ import okhttp3.WebSocketListener;
 
 public class ChatWebSocketClient {
     private WebSocket webSocket;
-    private final String SERVER_URL = "ws://172.11.194.81:8000/ws/chat/";
+    private final String SERVER_URL = "ws://172.19.200.204:8000/ws/chat/";
     private ChatMessageListener listener;
 
     // Interface để truyền dữ liệu về Activity/Fragment

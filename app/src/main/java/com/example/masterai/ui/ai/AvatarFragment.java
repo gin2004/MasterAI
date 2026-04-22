@@ -32,6 +32,7 @@ import com.example.masterai.model.ImageResponse;
 import com.example.masterai.model.PromptResponse;
 import com.example.masterai.model.User;
 import com.example.masterai.utils.AIUtils;
+import com.example.masterai.utils.HintSliderUtil;
 import com.example.masterai.utils.UserManager;
 import com.example.masterai.utils.ViewsUtils;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
@@ -44,6 +45,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import okhttp3.MediaType;
@@ -70,6 +72,7 @@ public class AvatarFragment extends Fragment {
     private User current_user;
     private String userId =null;
     private String currentGenerationId;
+    private HintSliderUtil hintSliderUtil;
 
     private final ActivityResultLauncher<String> pickImageLauncher = registerForActivityResult(
             new ActivityResultContracts.GetContent(),
@@ -164,6 +167,16 @@ public class AvatarFragment extends Fragment {
         binding.btnUpload.setOnClickListener(v -> {
             pickImageLauncher.launch("image/*");
         });
+
+        //hint
+        List<String> myHints = Arrays.asList(
+                "Tạo avatar theo phong cách bạn thích...",
+                "Ví dụ: 'Avatar nam phong cách anime, tóc trắng, mắt xanh'",
+                "Thử: 'Chân dung nữ cyberpunk, ánh đèn neon, đeo kính'",
+                "Bạn muốn avatar trông như thế nào?",
+                "Gợi ý: 'Ảnh đại diện tối giản, màu pastel, dễ thương'"
+        );
+        hintSliderUtil = new HintSliderUtil(binding.tsHint, binding.etPrompt, myHints);
 
     }
 
@@ -431,5 +444,21 @@ public class AvatarFragment extends Fragment {
                     }
                 });
     }
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Bắt đầu chạy animation khi Activity hiển thị lên màn hình
+        if (hintSliderUtil != null) {
+            hintSliderUtil.startSliding();
+        }
+    }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        // Bắt buộc phải dừng khi ẩn Activity để tránh Memory Leak
+        if (hintSliderUtil != null) {
+            hintSliderUtil.stopSliding();
+        }
+    }
 }

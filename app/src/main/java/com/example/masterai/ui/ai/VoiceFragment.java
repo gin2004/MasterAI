@@ -1,66 +1,307 @@
 package com.example.masterai.ui.ai;
 
+import android.media.AudioAttributes;
+import android.media.MediaPlayer;
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.SeekBar;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.masterai.R;
+import com.example.masterai.api.RetrofitClient;
+import com.example.masterai.databinding.DialogAudioPlayerBottomSheetBinding;
+import com.example.masterai.databinding.DialogLoadingBottomSheetBinding;
+import com.example.masterai.databinding.FragmentVoiceBinding;
+import com.example.masterai.model.AudioResponse;
+import com.example.masterai.model.Generation;
+import com.example.masterai.model.GenerationResponse;
+import com.example.masterai.utils.HintSliderUtil;
+import com.example.masterai.utils.UserManager;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link VoiceFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class VoiceFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private FragmentVoiceBinding binding;
+    private BottomSheetDialog loadingDialog;
+    private MediaPlayer mediaPlayer;
+    private Handler handler = new Handler();
+    private Runnable updateSeekBar;
+    private AudioAdapter audioAdapter;
+    private List<Generation> audioList = new ArrayList<>();
+    private HintSliderUtil hintSliderUtil;
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    public VoiceFragment() {
-        // Required empty public constructor
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        binding = FragmentVoiceBinding.inflate(inflater, container, false);
+        initView();
+        return binding.getRoot();
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment VoiceFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static VoiceFragment newInstance(String param1, String param2) {
-        VoiceFragment fragment = new VoiceFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
+    private void initView() {
+        //hint
+        List<String> myHints = Arrays.asList(
+                "Mô tả bài nhạc bạn muốn tạo...",
+                "Ví dụ: 'Nhạc chill lofi để học bài, nhẹ nhàng'",
+                "Thử: 'Beat hip hop sôi động, phong cách trap'",
+                "Bạn muốn tạo nhạc với cảm xúc gì?",
+                "Gợi ý: 'Nhạc piano buồn, không lời, cinematic'"
+        );
+        hintSliderUtil = new HintSliderUtil(binding.tsHint, binding.etPrompt, myHints);
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        setupRecyclerView();
+        setupListeners();
+        fetchAudioGenerations();
+    }
+
+    private void setupRecyclerView() {
+        audioAdapter = new AudioAdapter((item, position) -> {
+            showAudioPlayerBottomSheet(item.getMediaUrl());
+        });
+        binding.rvGenerations.setLayoutManager(new LinearLayoutManager(getContext()));
+        binding.rvGenerations.setAdapter(audioAdapter);
+    }
+
+    private void setupListeners() {
+        binding.swipeRefresh.setOnRefreshListener(this::fetchAudioGenerations);
+
+        binding.btnGenerate.setOnClickListener(v -> {
+            String promptText = binding.etPrompt.getText().toString().trim();
+            if (promptText.isEmpty()) {
+                Toast.makeText(getContext(), "Vui lòng nhập nội dung cần tạo nhạc", Toast.LENGTH_SHORT).show();
+                binding.etPrompt.requestFocus();
+                return;
+            }
+            generateAudioFromAPI(promptText);
+        });
+    }
+
+    private void fetchAudioGenerations() {
+        showShimmer(true);
+        String userId = UserManager.getInstance(getContext()).getUser().getId();
+
+        RetrofitClient.getApiService().getGenerations(userId, "audio", 1, 50).enqueue(new Callback<GenerationResponse>() {
+            @Override
+            public void onResponse(Call<GenerationResponse> call, Response<GenerationResponse> response) {
+                showShimmer(false);
+                binding.swipeRefresh.setRefreshing(false);
+                if (response.isSuccessful() && response.body() != null) {
+                    audioList = response.body().data;
+                    audioAdapter.setAudioList(audioList);
+                } else {
+                    Toast.makeText(getContext(), "Không thể lấy lịch sử nhạc", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<GenerationResponse> call, Throwable t) {
+                showShimmer(false);
+                binding.swipeRefresh.setRefreshing(false);
+                Toast.makeText(getContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void showShimmer(boolean show) {
+        if (show) {
+            binding.layoutShimmer.shimmerViewContainer.setVisibility(View.VISIBLE);
+            binding.layoutShimmer.shimmerViewContainer.startShimmer();
+            binding.rvGenerations.setVisibility(View.GONE);
+        } else {
+            binding.layoutShimmer.shimmerViewContainer.stopShimmer();
+            binding.layoutShimmer.shimmerViewContainer.setVisibility(View.GONE);
+            binding.rvGenerations.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void generateAudioFromAPI(String prompt) {
+        showLoadingDialog();
+        String userId = UserManager.getInstance(getContext()).getUser().getId();
+        RetrofitClient.getApiService().generateAudio(userId, prompt).enqueue(new Callback<AudioResponse>() {
+            @Override
+            public void onResponse(Call<AudioResponse> call, Response<AudioResponse> response) {
+                hideLoadingDialog();
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    showAudioPlayerBottomSheet(response.body().getMediaUrl());
+                    // Tự động làm mới danh sách sau khi tạo thành công
+                    fetchAudioGenerations();
+                } else {
+                    String errorMsg = response.body() != null ? response.body().getMessage() : "Lỗi không xác định";
+                    Toast.makeText(getContext(), "Lỗi: " + errorMsg, Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<AudioResponse> call, Throwable t) {
+                hideLoadingDialog();
+                Toast.makeText(getContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void showLoadingDialog() {
+        loadingDialog = new BottomSheetDialog(requireContext());
+        DialogLoadingBottomSheetBinding loadingBinding = DialogLoadingBottomSheetBinding.inflate(getLayoutInflater());
+        loadingBinding.tvStatus.setText("Đang tạo âm thanh...");
+        loadingDialog.setContentView(loadingBinding.getRoot());
+        loadingDialog.setCancelable(false);
+        loadingDialog.show();
+    }
+
+    private void hideLoadingDialog() {
+        if (loadingDialog != null && loadingDialog.isShowing()) {
+            loadingDialog.dismiss();
+        }
+    }
+
+    private void showAudioPlayerBottomSheet(String audioUrl) {
+        BottomSheetDialog audioDialog = new BottomSheetDialog(requireContext());
+        DialogAudioPlayerBottomSheetBinding audioBinding = DialogAudioPlayerBottomSheetBinding.inflate(getLayoutInflater());
+        audioDialog.setContentView(audioBinding.getRoot());
+
+        mediaPlayer = new MediaPlayer();
+        mediaPlayer.setAudioAttributes(new AudioAttributes.Builder()
+                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                .setUsage(AudioAttributes.USAGE_MEDIA)
+                .build());
+
+        try {
+            mediaPlayer.setDataSource(audioUrl);
+            mediaPlayer.prepareAsync();
+        } catch (IOException e) {
+            Toast.makeText(getContext(), "Không thể tải âm thanh", Toast.LENGTH_SHORT).show();
+        }
+
+        audioBinding.btnPlayPause.setEnabled(false);
+        mediaPlayer.setOnPreparedListener(mp -> {
+            audioBinding.btnPlayPause.setEnabled(true);
+            audioBinding.seekBar.setMax(mp.getDuration());
+            audioBinding.tvTotalTime.setText(formatTime(mp.getDuration()));
+            mp.start();
+            audioBinding.btnPlayPause.setImageResource(android.R.drawable.ic_media_pause);
+            startSeekBarUpdate(audioBinding);
+        });
+
+        audioBinding.btnPlayPause.setOnClickListener(v -> {
+            if (mediaPlayer.isPlaying()) {
+                mediaPlayer.pause();
+                audioBinding.btnPlayPause.setImageResource(R.drawable.ic_play_white);
+            } else {
+                mediaPlayer.start();
+                audioBinding.btnPlayPause.setImageResource(R.drawable.ic_pause);
+                startSeekBarUpdate(audioBinding);
+            }
+        });
+
+        audioBinding.btnRewind.setOnClickListener(v -> {
+            int currentPos = mediaPlayer.getCurrentPosition();
+            mediaPlayer.seekTo(Math.max(currentPos - 10000, 0));
+        });
+
+        audioBinding.btnForward.setOnClickListener(v -> {
+            int currentPos = mediaPlayer.getCurrentPosition();
+            mediaPlayer.seekTo(Math.min(currentPos + 10000, mediaPlayer.getDuration()));
+        });
+
+        audioBinding.seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (fromUser) {
+                    mediaPlayer.seekTo(progress);
+                    audioBinding.tvCurrentTime.setText(formatTime(progress));
+                }
+            }
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {}
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {}
+        });
+
+        mediaPlayer.setOnCompletionListener(mp -> {
+            audioBinding.btnPlayPause.setImageResource(android.R.drawable.ic_media_play);
+            audioBinding.seekBar.setProgress(0);
+            audioBinding.tvCurrentTime.setText("00:00");
+            handler.removeCallbacks(updateSeekBar);
+        });
+
+        audioDialog.setOnDismissListener(dialog -> {
+            if (mediaPlayer != null) {
+                mediaPlayer.release();
+                mediaPlayer = null;
+            }
+            handler.removeCallbacks(updateSeekBar);
+        });
+
+        audioDialog.show();
+    }
+
+    private void startSeekBarUpdate(DialogAudioPlayerBottomSheetBinding audioBinding) {
+        updateSeekBar = new Runnable() {
+            @Override
+            public void run() {
+                if (mediaPlayer != null && mediaPlayer.isPlaying()) {
+                    int currentPos = mediaPlayer.getCurrentPosition();
+                    audioBinding.seekBar.setProgress(currentPos);
+                    audioBinding.tvCurrentTime.setText(formatTime(currentPos));
+                    handler.postDelayed(this, 1000);
+                }
+            }
+        };
+        handler.post(updateSeekBar);
+    }
+
+    private String formatTime(int millis) {
+        int minutes = (millis / 1000) / 60;
+        int seconds = (millis / 1000) % 60;
+        return String.format("%02d:%02d", minutes, seconds);
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (mediaPlayer != null) {
+            mediaPlayer.release();
+            mediaPlayer = null;
+        }
+        handler.removeCallbacks(updateSeekBar);
+        binding = null;
+    }
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Bắt đầu chạy animation khi Activity hiển thị lên màn hình
+        if (hintSliderUtil != null) {
+            hintSliderUtil.startSliding();
         }
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_voice, container, false);
+    public void onPause() {
+        super.onPause();
+        // Bắt buộc phải dừng khi ẩn Activity để tránh Memory Leak
+        if (hintSliderUtil != null) {
+            hintSliderUtil.stopSliding();
+        }
     }
 }

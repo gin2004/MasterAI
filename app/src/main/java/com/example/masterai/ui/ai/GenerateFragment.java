@@ -104,7 +104,7 @@ public class GenerateFragment extends Fragment {
     }
 
     private void setSelected(MaterialButton btn) {
-        btn.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#A066FF")));
+        btn.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#00BFFF")));
         btn.setTextColor(Color.WHITE);
         btn.setIconTint(ColorStateList.valueOf(Color.WHITE));
     }

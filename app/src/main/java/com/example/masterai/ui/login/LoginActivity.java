@@ -68,6 +68,8 @@ public class LoginActivity extends AppCompatActivity {
 
                 @Override
                 public void onFailure(Call<LoginResponse> call, Throwable t) {
+                    android.util.Log.e("API_ERROR", "Kết nối thất bại: " + t.getMessage(), t);
+
                     Toast.makeText(LoginActivity.this, "Lỗi kết nối server", Toast.LENGTH_SHORT).show();
                 }
             });

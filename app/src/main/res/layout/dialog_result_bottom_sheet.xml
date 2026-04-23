@@ -72,7 +72,7 @@
                 android:layout_width="18dp"
                 android:layout_height="18dp"
                 android:src="@android:drawable/ic_menu_share"
-                app:tint="#A066FF" />
+                app:tint="@color/ai_primary" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -93,7 +93,7 @@
             android:textAllCaps="false"
             android:textSize="16sp"
             android:textStyle="bold"
-            app:backgroundTint="#A066FF"
+            app:backgroundTint="@color/ai_primary"
             app:cornerRadius="16dp"
             app:iconGravity="textStart" />
     </LinearLayout>

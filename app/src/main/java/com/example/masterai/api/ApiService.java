@@ -167,6 +167,10 @@ public interface ApiService {
     @PATCH("api/notifications/{id}/read/")
     Call<Notification> markAsRead(@Path("id") String notificationId);
 
+    // SEARCH
+    @GET("api/users/search/")
+    Call<List<User>> searchUsers(@Query("q") String query);
+
 
 
     // chat service

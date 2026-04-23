@@ -1,7 +1,6 @@
 package com.example.masterai.ui.comminity;
 
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.SpannableString;
@@ -12,7 +11,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -28,6 +26,8 @@ import com.example.masterai.api.RetrofitClient;
 import com.example.masterai.model.Notification;
 import com.example.masterai.model.User;
 import com.example.masterai.utils.UserManager;
+import com.facebook.shimmer.ShimmerFrameLayout;
+import com.google.android.material.card.MaterialCardView;
 
 import org.json.JSONObject;
 
@@ -36,7 +36,6 @@ import java.util.List;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.Response;
 import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
 import retrofit2.Call;
@@ -48,11 +47,11 @@ public class NotificationFragment extends Fragment {
 
     private RecyclerView rvNotifications;
     private SwipeRefreshLayout swipeRefresh;
+    private ShimmerFrameLayout shimmerContainer;
     private NotificationAdapter adapter;
     private List<Notification> notificationList = new ArrayList<>();
     private User currentUser;
 
-    // 🔥 WebSocket
     private WebSocket webSocket;
     private OkHttpClient client;
 
@@ -74,62 +73,64 @@ public class NotificationFragment extends Fragment {
 
         rvNotifications = view.findViewById(R.id.rvNotifications);
         swipeRefresh = view.findViewById(R.id.swipeRefresh);
+        shimmerContainer = view.findViewById(R.id.shimmer_view_container);
 
         if (swipeRefresh != null) {
-            swipeRefresh.setOnRefreshListener(this::fetchNotifications);
+            swipeRefresh.setOnRefreshListener(() -> {
+                fetchNotifications(false);
+            });
         }
 
         rvNotifications.setLayoutManager(new LinearLayoutManager(getContext()));
-
         adapter = new NotificationAdapter(notificationList);
         rvNotifications.setAdapter(adapter);
 
-        fetchNotifications();
-        connectWebSocket(); // 🔥 realtime
+        showSkeleton(true);
+        fetchNotifications(true);
+        connectWebSocket();
 
         return view;
     }
 
-    // =========================
-    // 🔥 CONNECT WEBSOCKET
-    // =========================
+    private void showSkeleton(boolean show) {
+        if (shimmerContainer != null) {
+            if (show) {
+                shimmerContainer.startShimmer();
+                shimmerContainer.setVisibility(View.VISIBLE);
+                rvNotifications.setVisibility(View.GONE);
+            } else {
+                shimmerContainer.stopShimmer();
+                shimmerContainer.setVisibility(View.GONE);
+                rvNotifications.setVisibility(View.VISIBLE);
+            }
+        }
+    }
+
     private void connectWebSocket() {
         if (currentUser == null) return;
-
         String userId = currentUser.getId();
-
-        // ⚠️ ĐỔI IP CHO ĐÚNG MÁY BẠN
-        String wsUrl = "ws://172.11.218.57:8001/ws/notifications/" + userId + "/";
+        String wsUrl = "ws://192.168.99.102:8001/ws/notifications/" + userId + "/";
 
         client = new OkHttpClient();
-
-        Request request = new Request.Builder()
-                .url(wsUrl)
-                .build();
+        Request request = new Request.Builder().url(wsUrl).build();
 
         webSocket = client.newWebSocket(request, new WebSocketListener() {
-
-            @Override
-            public void onOpen(@NonNull WebSocket webSocket, @NonNull Response response) {
-                Log.d(TAG, "WebSocket connected");
-            }
-
             @Override
             public void onMessage(@NonNull WebSocket webSocket, @NonNull String text) {
                 try {
                     JSONObject json = new JSONObject(text);
-                    // Backend thường gửi: { "type": "send_notification", "data": { ... } }
-                    JSONObject data = json.getJSONObject("data");
+                    JSONObject data = json.optJSONObject("data");
+                    if (data == null) data = json;
 
                     Notification notification = new Notification();
                     notification.setId(data.optString("id"));
+                    notification.setMessage(data.optString("message"));
+                    notification.setType(data.optString("type"));
+                    notification.setRead(false);
+                    
+                    String now = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault()).format(new java.util.Date());
+                    notification.setCreatedAt(data.optString("created_at", now));
 
-                    // Logic gộp content
-                    String message = data.optString("message");
-                    String title = data.optString("title");
-                    notification.setContent(title + ": " + message);
-
-                    // 🔥 Lấy Object Sender từ JSON lồng nhau
                     if (data.has("sender") && !data.isNull("sender")) {
                         JSONObject senderJson = data.getJSONObject("sender");
                         Notification.Sender senderObj = new Notification.Sender();
@@ -149,50 +150,34 @@ public class NotificationFragment extends Fragment {
                     Log.e(TAG, "Parse error", e);
                 }
             }
-
-            @Override
-            public void onFailure(@NonNull WebSocket webSocket, @NonNull Throwable t, okhttp3.Response response) {
-                Log.e(TAG, "WebSocket error", t);
-            }
         });
     }
 
-    // =========================
-    // 📄 FETCH API
-    // =========================
-    private void fetchNotifications() {
-        if (currentUser == null) {
-            Log.e(TAG, "fetchNotifications: currentUser is null");
-            return;
-        }
-
-        if (swipeRefresh != null) swipeRefresh.setRefreshing(true);
+    private void fetchNotifications(boolean isFirstLoad) {
+        if (currentUser == null) return;
 
         RetrofitClient.getApiService().getNotifications(currentUser.getId()).enqueue(new Callback<List<Notification>>() {
             @Override
             public void onResponse(@NonNull Call<List<Notification>> call, @NonNull retrofit2.Response<List<Notification>> response) {
                 if (swipeRefresh != null) swipeRefresh.setRefreshing(false);
+                showSkeleton(false);
 
                 if (response.isSuccessful() && response.body() != null) {
                     notificationList.clear();
                     notificationList.addAll(response.body());
                     adapter.notifyDataSetChanged();
-                } else {
-                    Toast.makeText(getContext(), "Lỗi tải thông báo", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<List<Notification>> call, @NonNull Throwable t) {
                 if (swipeRefresh != null) swipeRefresh.setRefreshing(false);
+                showSkeleton(false);
                 Log.e(TAG, "fetch error", t);
             }
         });
     }
 
-    // =========================
-    // ✅ MARK AS READ
-    // =========================
     private void markAsRead(Notification notification, int position) {
         RetrofitClient.getApiService().markAsRead(notification.getId()).enqueue(new Callback<Notification>() {
             @Override
@@ -204,17 +189,13 @@ public class NotificationFragment extends Fragment {
             }
 
             @Override
-            public void onFailure(@NonNull Call<Notification> call, @NonNull Throwable t) {
+            public void onFailure(Call<Notification> call, Throwable t) {
                 Log.e(TAG, "markAsRead error", t);
             }
         });
     }
 
-    // =========================
-    // 🔁 ADAPTER
-    // =========================
     class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapter.ViewHolder> {
-
         List<Notification> items;
 
         NotificationAdapter(List<Notification> items) {
@@ -232,46 +213,41 @@ public class NotificationFragment extends Fragment {
         public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
             Notification item = items.get(position);
 
-            // 1. Xử lý nội dung in đậm tên người gửi (chuẩn Facebook)
-            String displayName = (item.getSenderName() != null) ? item.getSenderName() : "Hệ thống";
-            String message = " " + item.getMessage();
+            String displayName = (item.getSenderName() != null && !item.getSenderName().isEmpty()) 
+                    ? item.getSenderName() : "MasterAI";
+            
+            String content = item.getContent();
+            if (content == null) content = "";
 
-            SpannableString spannable = new SpannableString(displayName + message);
+            SpannableString spannable = new SpannableString(displayName + " " + content);
             spannable.setSpan(
                     new android.text.style.StyleSpan(android.graphics.Typeface.BOLD),
                     0, displayName.length(),
                     Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
             );
             holder.tvContent.setText(spannable);
-
-            // 2. Xử lý thời gian (Sử dụng hàm format bên dưới)
             holder.tvTime.setText(formatTimeAgo(item.getCreatedAt()));
 
-            // 3. Xử lý trạng thái Đã đọc / Chưa đọc
+            // Fix lỗi màu đen: Chuyển sang tông màu sáng
             if (item.isRead()) {
-                holder.itemView.setBackgroundColor(Color.TRANSPARENT); // Đã đọc thì nền trắng/trong suốt
+                holder.cardView.setStrokeColor(Color.TRANSPARENT);
                 holder.vDot.setVisibility(View.GONE);
+                holder.cardView.setCardBackgroundColor(Color.parseColor("#F5F5F5")); 
             } else {
-                holder.itemView.setBackgroundColor(Color.parseColor("#E7F3FF")); // Chưa đọc thì nền xanh nhạt
+                holder.cardView.setStrokeColor(Color.parseColor("#00BFFF"));
                 holder.vDot.setVisibility(View.VISIBLE);
+                holder.cardView.setCardBackgroundColor(Color.WHITE);
             }
 
-            // 4. Load Avatar (Giữ nguyên logic Glide của bạn nhưng thêm placeholder tốt hơn)
             Glide.with(holder.ivAvatar.getContext())
                     .load(item.getSenderAvatar())
                     .circleCrop()
-                    .placeholder(R.drawable.ic_nav_profile)
-                    .error(R.drawable.ic_nav_profile)
+                    .placeholder(R.drawable.ic_avatar)
+                    .error(R.drawable.ic_avatar)
                     .into(holder.ivAvatar);
 
-            // 5. Click xử lý
             holder.itemView.setOnClickListener(v -> {
-                // Lấy context trực tiếp từ view bị click (v)
-                Context context = v.getContext();
-
-                // Truyền context vào hàm xử lý click
-                handleNotificationClick(context, item);
-
+                handleNotificationClick(v.getContext(), item);
                 if (!item.isRead()) {
                     markAsRead(item, position);
                 }
@@ -279,29 +255,23 @@ public class NotificationFragment extends Fragment {
         }
 
         private String formatTimeAgo(String dateStr) {
+            if (dateStr == null || dateStr.isEmpty()) return "";
             try {
-                // Format ISO 8601 từ Django trả về
                 java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault());
+                if (dateStr.contains(".")) {
+                    sdf = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", java.util.Locale.getDefault());
+                }
                 sdf.setTimeZone(java.util.TimeZone.getTimeZone("UTC"));
                 long time = sdf.parse(dateStr).getTime();
-                long now = System.currentTimeMillis();
-
-                return android.text.format.DateUtils.getRelativeTimeSpanString(time, now, android.text.format.DateUtils.MINUTE_IN_MILLIS).toString();
+                return android.text.format.DateUtils.getRelativeTimeSpanString(time, System.currentTimeMillis(), android.text.format.DateUtils.MINUTE_IN_MILLIS).toString();
             } catch (Exception e) {
-                return dateStr; // Trả về mặc định nếu lỗi
+                return dateStr;
             }
         }
 
         private void handleNotificationClick(Context context, Notification item) {
-            String type = item.getType();
-
-            if ("comment".equals(type) || "like".equals(type)) {
-                // Ví dụ điều hướng
-                 Intent intent = new Intent(context, PostDetailActivity.class);
-                 context.startActivity(intent);
-            }
+            // Navigation logic
         }
-
 
         @Override
         public int getItemCount() {
@@ -312,6 +282,7 @@ public class NotificationFragment extends Fragment {
             TextView tvContent, tvTime;
             View vDot;
             ImageView ivAvatar;
+            MaterialCardView cardView;
 
             ViewHolder(View v) {
                 super(v);
@@ -319,13 +290,11 @@ public class NotificationFragment extends Fragment {
                 tvTime = v.findViewById(R.id.tvNotifTime);
                 vDot = v.findViewById(R.id.vNotifDot);
                 ivAvatar = v.findViewById(R.id.ivNotifAvatar);
+                cardView = (MaterialCardView) v;
             }
         }
     }
 
-    // =========================
-    // ❌ CLOSE SOCKET
-    // =========================
     @Override
     public void onDestroyView() {
         super.onDestroyView();

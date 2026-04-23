@@ -6,6 +6,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white"
+    android:clipChildren="false"
+    android:clipToPadding="false"
     tools:context=".MainActivity">
 
     <FrameLayout
@@ -18,19 +20,18 @@
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNav"
         android:layout_width="0dp"
-        android:layout_height="64dp"
+        android:layout_height="72dp"
         android:layout_marginBottom="24dp"
-        android:layout_marginHorizontal="24dp"
-        android:background="@drawable/bg_bottom_nav"
-        app:elevation="12dp"
+        android:layout_marginHorizontal="20dp"
+        android:translationZ="0dp"
+        android:background="@drawable/bg_bottom_nav_professional"
+        app:elevation="8dp"
         app:menu="@menu/bottom_nav_menu"
         app:labelVisibilityMode="unlabeled"
-        app:itemIconTint="@null"
+        app:itemIconTint="@color/nav_item_color_state"
         app:itemIconSize="26dp"
-        app:itemRippleColor="@color/purple_light"
-        app:itemPaddingTop="0dp"
-        app:itemPaddingBottom="0dp"
-        app:itemActiveIndicatorStyle="@style/App.Custom.Indicator"
+        app:itemRippleColor="@android:color/transparent"
+        app:itemActiveIndicatorStyle="@android:color/transparent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />

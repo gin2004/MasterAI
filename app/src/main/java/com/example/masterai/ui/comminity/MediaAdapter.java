@@ -1,5 +1,6 @@
 package com.example.masterai.ui.comminity;
 
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,6 +39,12 @@ public class MediaAdapter extends RecyclerView.Adapter<MediaAdapter.MediaViewHol
                 .load(media.getUrl())
                 .placeholder(android.R.drawable.ic_menu_gallery)
                 .into(holder.ivMediaImage);
+
+            holder.ivMediaImage.setOnClickListener(v -> {
+                Intent intent = new Intent(v.getContext(), FullScreenImageActivity.class);
+                intent.putExtra("image_url", media.getUrl());
+                v.getContext().startActivity(intent);
+            });
                 
         } else if ("voice".equals(media.getMediaType())) {
             holder.ivMediaImage.setVisibility(View.GONE);

@@ -32,6 +32,7 @@ import com.example.masterai.utils.UserManager;
 import com.google.android.material.bottomnavigation.BottomNavigationItemView;
 import com.google.android.material.bottomnavigation.BottomNavigationMenuView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -49,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         bottomNav = findViewById(R.id.bottomNav);
+
         initView();
 
         View mainView = findViewById(R.id.main);
@@ -73,11 +75,13 @@ public class MainActivity extends AppCompatActivity {
             if (itemId == R.id.btnCommunity) {
                 loadFragment(new CommunityFragment());
                 return true;
-            } else if (itemId == R.id.btnGenerate) {
-                loadFragment(new GenerateFragment());
-                return true;
-            } else if (itemId == R.id.btnPost) {
+            } else if (itemId == R.id.btnPlus) {
                 loadFragment(new PostFragment());
+                return true;
+            }
+
+            else if (itemId == R.id.btnGenerate) {
+                loadFragment(new GenerateFragment());
                 return true;
             } else if (itemId == R.id.btnMessage) {
                 loadFragment(new MessageFragment());
@@ -88,6 +92,7 @@ public class MainActivity extends AppCompatActivity {
             }
             return false;
         });
+
 
         // Kích hoạt hiệu ứng mặc định cho item đầu tiên
         bottomNav.post(() -> updateBottomNavScale(R.id.btnCommunity));
@@ -175,6 +180,7 @@ public class MainActivity extends AppCompatActivity {
         if (bottomNav != null) {
             bottomNav.setVisibility(visibility);
         }
+
     }
 
     public void navigateToCommunity() {

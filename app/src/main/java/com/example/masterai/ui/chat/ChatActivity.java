@@ -156,8 +156,8 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void uploadAndSendImage(Uri uri) {
-        // Hiển thị ảnh tạm thời lên UI (Local Uri)
-        Message tempMessage = new Message(myId, "[Đang gửi ảnh...]", uri.toString(), Message.TYPE_IMAGE, true);
+        // 1. Hiển thị ảnh tạm thời lên UI dùng Local URI (Tránh mất ảnh khi đang upload)
+        Message tempMessage = new Message(myId, "[Hình ảnh]", uri.toString(), Message.TYPE_IMAGE, true);
         messageList.add(tempMessage);
         int position = messageList.size() - 1;
         messageAdapter.notifyItemInserted(position);
@@ -179,22 +179,19 @@ public class ChatActivity extends AppCompatActivity {
             public void onResponse(Call<UploadImageRespone> call, Response<UploadImageRespone> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     String serverImageUrl = response.body().image_url;
-                    //  Gửi URL ảnh qua WebSocket
+                    
+                    // Gửi URL ảnh qua WebSocket
                     if (webSocketClient != null) {
                         webSocketClient.sendImage(serverImageUrl);
                     }
                     
-                    // Cập nhật lại tin nhắn tạm thời thành URL server (nếu cần)
-                    tempMessage.setText("[Hình ảnh]");
+                    // Cập nhật lại URL server vào model nhưng KHÔNG notifyItemChanged 
+                    // để giữ nguyên ảnh local đang hiển thị, tránh bị nháy/mất ảnh.
                     tempMessage.setImageUrl(serverImageUrl);
-                    messageAdapter.notifyItemChanged(position);
                 } else {
-                    // --- THÊM ĐOẠN NÀY ĐỂ DEBUG ---
                     try {
                         String errorMsg = response.errorBody() != null ? response.errorBody().string() : "Lỗi không xác định";
-                        int statusCode = response.code();
-                        Log.e("Upload_Error", "Mã lỗi: " + statusCode + ", Chi tiết: " + errorMsg);
-                        Toast.makeText(ChatActivity.this, "Lỗi " + statusCode + ": Xem Logcat", Toast.LENGTH_LONG).show();
+                        Log.e("Upload_Error", "Chi tiết: " + errorMsg);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -247,7 +244,7 @@ public class ChatActivity extends AppCompatActivity {
 
     private void setupRecyclerView() {
         messageList = new ArrayList<>();
-        String targetAvatarUrl = "https://i.pravatar.cc/150?u=" + targetId;
+        String targetAvatarUrl = getIntent().getStringExtra("image_url");
         messageAdapter = new MessageAdapter(this, messageList, targetAvatarUrl);
         
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);

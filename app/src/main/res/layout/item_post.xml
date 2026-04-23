@@ -4,36 +4,39 @@
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="12dp"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="0dp"
-        app:strokeWidth="0.1dp"
-        app:strokeColor="@color/gray_border">
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginVertical="8dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="2dp"
+        app:strokeWidth="0dp"
+        android:backgroundTint="@color/white">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:background="@color/white"
             android:padding="16dp">
 
-            <LinearLayout
+            <!-- Header: Avatar, Name, Time, More -->
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
+                android:layout_height="wrap_content">
 
                 <com.google.android.material.imageview.ShapeableImageView
                     android:id="@+id/ivAvatar"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:scaleType="centerCrop"
                     app:shapeAppearanceOverlay="@style/CircleImage"
                     android:background="@color/gray_bg" />
+
                 <LinearLayout
-                    android:layout_width="0dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
+                    android:layout_toEndOf="@id/ivAvatar"
+                    android:layout_toStartOf="@id/btnMore"
                     android:layout_marginStart="12dp"
+                    android:layout_centerVertical="true"
                     android:orientation="vertical">
 
                     <TextView
@@ -41,6 +44,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="User Name"
+                        android:textSize="15sp"
                         android:textStyle="bold"
                         android:textColor="@color/black" />
 
@@ -48,62 +52,72 @@
                         android:id="@+id/tvTime"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="2h"
+                        android:text="2 hours ago"
                         android:textSize="12sp"
                         android:textColor="@color/gray_text" />
                 </LinearLayout>
 
                 <ImageView
                     android:id="@+id/btnMore"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_marginStart="8dp"
-                    android:src="@android:drawable/ic_menu_more"
-                    android:padding="2dp"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:src="@drawable/ic_3_dot"
+                    android:padding="6dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     app:tint="@color/gray_text"
                     android:visibility="gone" />
-            </LinearLayout>
+            </RelativeLayout>
 
+            <!-- Post Content -->
             <TextView
                 android:id="@+id/tvContent"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
                 android:text="Post content goes here"
-                android:textColor="@color/black" />
+                android:textSize="14sp"
+                android:lineSpacingExtra="4dp"
+                android:textColor="#333333" />
 
-            <!-- Media RecyclerView (Images and Voices) -->
+            <!-- Media Section -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvPostMedia"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:orientation="horizontal"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                android:clipToPadding="false"
+                android:overScrollMode="never"
                 android:visibility="gone" />
 
-            <!-- Bottom Actions: Like, Comment, Share -->
+            <!-- Divider -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:background="#EEEEEE"
+                android:layout_marginTop="16dp" />
+
+            <!-- Bottom Actions -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
+                android:layout_marginTop="8dp"
+                android:orientation="horizontal">
 
                 <LinearLayout
                     android:id="@+id/btnLike"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/bg_bottom_nav"
-                    android:paddingHorizontal="10dp"
-                    android:paddingVertical="6dp"
-                    android:gravity="center_vertical">
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:paddingVertical="8dp"
+                    android:background="?attr/selectableItemBackground">
 
                     <ImageView
                         android:id="@+id/ivLike"
-                        android:layout_width="16dp"
-                        android:layout_height="18dp"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
                         android:src="@drawable/ic_like"
                         app:tint="@color/gray_text" />
                     <TextView
@@ -111,22 +125,22 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="2"
-                        android:layout_marginStart="6dp"
-                        android:textSize="12sp" />
+                        android:layout_marginStart="8dp"
+                        android:textSize="13sp"
+                        android:textColor="@color/gray_text" />
                 </LinearLayout>
 
                 <LinearLayout
                     android:id="@+id/btnComment"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:background="@drawable/bg_bottom_nav"
-                    android:paddingHorizontal="10dp"
-                    android:paddingVertical="6dp"
-                    android:gravity="center_vertical">
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:paddingVertical="8dp"
+                    android:background="?attr/selectableItemBackground">
                     <ImageView
-                        android:layout_width="16dp"
-                        android:layout_height="16dp"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
                         android:src="@drawable/ic_comment"
                         app:tint="@color/gray_text" />
                     <TextView
@@ -134,21 +148,12 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="5"
-                        android:layout_marginStart="6dp"
-                        android:textSize="12sp" />
+                        android:layout_marginStart="8dp"
+                        android:textSize="13sp"
+                        android:textColor="@color/gray_text" />
                 </LinearLayout>
 
-                <View
-                    android:layout_width="0dp"
-                    android:layout_height="0dp"
-                    android:layout_weight="1" />
 
-                <ImageView
-                    android:id="@+id/btnShare"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:src="@android:drawable/ic_menu_share"
-                    app:tint="@color/gray_text" />
             </LinearLayout>
 
         </LinearLayout>

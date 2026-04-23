@@ -1,8 +1,5 @@
 package com.example.masterai.ui.comminity;
 
-import android.app.Activity;
-import android.content.ClipData;
-import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -10,9 +7,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.Toast;
+
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -20,20 +16,20 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+
+import com.bumptech.glide.Glide;
 import com.example.masterai.MainActivity;
-import com.example.masterai.R;
 import com.example.masterai.api.RetrofitClient;
+import com.example.masterai.databinding.FragmentEditPostBinding;
 import com.example.masterai.model.Media;
 import com.example.masterai.model.Post;
+import com.example.masterai.model.User;
+import com.example.masterai.utils.UserManager;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -44,13 +40,11 @@ import retrofit2.Response;
 
 public class EditPostFragment extends Fragment {
 
-    private EditText etPostContent;
-    private View btnUpdatePost;
-    private ImageButton btnUploadImage, btnBack;
-    private RecyclerView rvImages;
+    private FragmentEditPostBinding binding;
     private ImagePreviewAdapter imagePreviewAdapter;
     private List<Uri> selectedImageUris = new ArrayList<>();
     private Post postToEdit;
+    private User currentUser;
 
     public static EditPostFragment newInstance(Post post) {
         EditPostFragment fragment = new EditPostFragment();
@@ -79,39 +73,47 @@ public class EditPostFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_edit_post, container, false);
+        binding = FragmentEditPostBinding.inflate(inflater, container, false);
 
-        etPostContent = view.findViewById(R.id.etPostContent);
-        btnUpdatePost = view.findViewById(R.id.btnUpdatePost);
-        btnUploadImage = view.findViewById(R.id.btnUploadImage);
-        btnBack = view.findViewById(R.id.btnBack);
-        rvImages = view.findViewById(R.id.rvImages);
 
-        if (postToEdit != null) {
-            etPostContent.setText(postToEdit.getContent());
-            if (postToEdit.getMedia() != null) {
-                for (Media m : postToEdit.getMedia()) {
-                    selectedImageUris.add(Uri.parse(m.getUrl()));
-                }
-            }
-        }
 
-        rvImages.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
+        currentUser = UserManager.getInstance(requireContext()).getUser();
+        setupUI();
+        loadData();
+        return binding.getRoot();
+    }
+
+    private void setupUI() {
+        binding.rvImages.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
         imagePreviewAdapter = new ImagePreviewAdapter(selectedImageUris);
-        rvImages.setAdapter(imagePreviewAdapter);
+        binding.rvImages.setAdapter(imagePreviewAdapter);
 
-        btnUploadImage.setOnClickListener(v -> openGallery());
-        btnUpdatePost.setOnClickListener(v -> updatePost());
-        btnBack.setOnClickListener(v -> getParentFragmentManager().popBackStack());
+        binding.btnUploadImage.setOnClickListener(v -> openGallery());
+        binding.btnUpdatePost.setOnClickListener(v -> updatePost());
+        binding.btnBack.setOnClickListener(v -> getParentFragmentManager().popBackStack());
 
-        updateImagesVisibility();
 
         // Ẩn BottomNavigationView
         if (getActivity() instanceof MainActivity) {
             ((MainActivity) getActivity()).setBottomNavVisibility(View.GONE);
         }
+    }
 
-        return view;
+    private void loadData() {
+        if (postToEdit != null) {
+            binding.etPostContent.setText(postToEdit.getContent());
+            if (postToEdit.getMedia() != null) {
+                for (Media m : postToEdit.getMedia()) {
+                    selectedImageUris.add(Uri.parse(m.getUrl()));
+                }
+            }
+
+        }
+        if(currentUser!= null){
+            binding.tvUserName.setText(currentUser.getUsername());
+            Glide.with(this).load(currentUser.getAvatarUrl()).into(binding.ivUserAvatar);
+        }
+        updateImagesVisibility();
     }
 
     @Override
@@ -121,6 +123,7 @@ public class EditPostFragment extends Fragment {
         if (getActivity() instanceof MainActivity) {
             ((MainActivity) getActivity()).setBottomNavVisibility(View.VISIBLE);
         }
+        binding = null;
     }
 
     private void openGallery() {
@@ -131,22 +134,22 @@ public class EditPostFragment extends Fragment {
 
     private void updateImagesVisibility() {
         if (selectedImageUris.isEmpty()) {
-            rvImages.setVisibility(View.GONE);
+            binding.rvImages.setVisibility(View.GONE);
         } else {
-            rvImages.setVisibility(View.VISIBLE);
+            binding.rvImages.setVisibility(View.VISIBLE);
             imagePreviewAdapter.notifyDataSetChanged();
         }
     }
 
     private void updatePost() {
-        String content = etPostContent.getText().toString().trim();
+        String content = binding.etPostContent.getText().toString().trim();
 
         if (TextUtils.isEmpty(content) && selectedImageUris.isEmpty()) {
             Toast.makeText(getContext(), "Vui lòng nhập nội dung hoặc chọn ảnh", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        btnUpdatePost.setEnabled(false);
+        binding.btnUpdatePost.setEnabled(false);
 
         // 1. Chuẩn bị dữ liệu text
         RequestBody rbContent = createPartFromString(content);
@@ -160,10 +163,8 @@ public class EditPostFragment extends Fragment {
             String uriString = uri.toString();
 
             if (uriString.startsWith("http")) {
-                // ĐÂY LÀ ẢNH CŨ: Gửi URL về để Backend giữ lại
                 keptMediaParts.add(MultipartBody.Part.createFormData("kept_media", uriString));
             } else {
-                // ĐÂY LÀ ẢNH MỚI: Nén và tạo Part để upload
                 MultipartBody.Part part = prepareFilePart("files", uri);
                 if (part != null) {
                     newFileParts.add(part);
@@ -176,12 +177,12 @@ public class EditPostFragment extends Fragment {
                 .enqueue(new Callback<Post>() {
                     @Override
                     public void onResponse(Call<Post> call, Response<Post> response) {
-                        btnUpdatePost.setEnabled(true);
+                        if (getContext() == null) return;
+                        binding.btnUpdatePost.setEnabled(true);
                         if (response.isSuccessful()) {
                             Toast.makeText(getContext(), "Cập nhật bài viết thành công!", Toast.LENGTH_SHORT).show();
                             getParentFragmentManager().popBackStack();
                         } else {
-                            // In lỗi 413 hoặc lỗi khác để debug
                             Log.e("EDIT_ERR", "Code: " + response.code());
                             Toast.makeText(getContext(), "Lỗi server: " + response.code(), Toast.LENGTH_SHORT).show();
                         }
@@ -189,11 +190,13 @@ public class EditPostFragment extends Fragment {
 
                     @Override
                     public void onFailure(Call<Post> call, Throwable t) {
-                        btnUpdatePost.setEnabled(true);
+                        if (getContext() == null) return;
+                        binding.btnUpdatePost.setEnabled(true);
                         Toast.makeText(getContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
     }
+
     private RequestBody createPartFromString(String descriptionString) {
         if (descriptionString == null) descriptionString = "";
         return RequestBody.create(MultipartBody.FORM, descriptionString);
@@ -201,7 +204,6 @@ public class EditPostFragment extends Fragment {
 
     private MultipartBody.Part prepareFilePart(String partName, Uri fileUri) {
         try {
-            // Kiểm tra nếu là URL ảnh cũ (dành cho EditPostFragment)
             if (fileUri.toString().startsWith("http")) return null;
 
             android.content.ContentResolver contentResolver = requireContext().getContentResolver();
@@ -210,14 +212,11 @@ public class EditPostFragment extends Fragment {
             InputStream inputStream = contentResolver.openInputStream(fileUri);
             if (inputStream == null) return null;
 
-            // Gọi hàm getBytes đã có nén ảnh ở trên
             byte[] bytes = getBytes(inputStream);
-
-            // Đóng stream để giải phóng tài nguyên
             inputStream.close();
 
             RequestBody requestFile = RequestBody.create(
-                    MediaType.parse("image/jpeg"), // Sau khi nén bằng JPEG ở getBytes
+                    MediaType.parse("image/jpeg"),
                     bytes
             );
 
@@ -227,21 +226,16 @@ public class EditPostFragment extends Fragment {
             return null;
         }
     }
-    public byte[] getBytes(InputStream inputStream) throws IOException {
-        // 1. Giải mã InputStream thành Bitmap
-        android.graphics.Bitmap bitmap = android.graphics.BitmapFactory.decodeStream(inputStream);
 
-        // 2. RESIZE: Nếu ảnh rộng hơn 1080px, thu nhỏ nó lại
+    public byte[] getBytes(InputStream inputStream) throws IOException {
+        android.graphics.Bitmap bitmap = android.graphics.BitmapFactory.decodeStream(inputStream);
         int maxWidth = 1080;
         if (bitmap.getWidth() > maxWidth) {
             int newHeight = (int) (bitmap.getHeight() * ((float) maxWidth / bitmap.getWidth()));
             bitmap = android.graphics.Bitmap.createScaledBitmap(bitmap, maxWidth, newHeight, true);
         }
-
-        // 3. NÉN CHẤT LƯỢNG: Giảm xuống 70% (mức tối ưu cho di động)
         java.io.ByteArrayOutputStream outputStream = new java.io.ByteArrayOutputStream();
         bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 70, outputStream);
-
         return outputStream.toByteArray();
     }
 }

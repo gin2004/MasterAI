@@ -35,6 +35,7 @@ public class CommunityFragment extends Fragment {
     private RecyclerView rvPosts;
     private PostAdapter postAdapter;
     private User currentUser;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -53,6 +54,13 @@ public class CommunityFragment extends Fragment {
         view.findViewById(R.id.btnNotification).setOnClickListener(v -> {
             getParentFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, new NotificationFragment())
+                .addToBackStack(null)
+                .commit();
+        });
+
+        view.findViewById(R.id.btnSearch).setOnClickListener(v -> {
+            getParentFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, new SearchFragment())
                 .addToBackStack(null)
                 .commit();
         });

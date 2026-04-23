@@ -28,7 +28,7 @@
         <ImageView
             android:layout_width="24dp"
             android:layout_height="24dp"
-            android:src="@android:drawable/ic_menu_edit"
+            android:src="@drawable/ic_edit"
             app:tint="@color/purple_primary" />
 
         <TextView
@@ -55,7 +55,7 @@
         <ImageView
             android:layout_width="24dp"
             android:layout_height="24dp"
-            android:src="@android:drawable/ic_menu_delete"
+            android:src="@drawable/ic_remove"
             app:tint="@color/red_dot" />
 
         <TextView

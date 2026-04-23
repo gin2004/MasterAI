@@ -9,9 +9,10 @@
         android:icon="@drawable/ic_generate"
         android:title="Generate" />
     <item
-        android:id="@+id/btnPost"
+        android:id="@+id/btnPlus"
         android:icon="@drawable/ic_plus"
-        android:title="Post" />
+        android:title="Thêm"
+        />
     <item
         android:id="@+id/btnMessage"
         android:icon="@drawable/ic_chat"

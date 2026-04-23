@@ -44,16 +44,19 @@ public class ChatWebSocketClient {
                 Log.d("WebSocket", "Nhận được: " + text);
                 try {
                     JSONObject json = new JSONObject(text);
-                    String type = json.getString("type");
-                    if (type.equals("chat")) {
+                    String type = json.optString("type", "");
+                    // Kiểm tra nếu type là "chat" hoặc backend trả về chính message_type qua type
+                    if (type.equals("chat") || json.has("message")) {
                         String message = json.optString("message", "");
-                        String senderId = json.getString("sender_id");
-                        String timestamp = json.getString("timestamp");
+                        String senderId = json.optString("sender_id", "");
+                        String timestamp = json.optString("timestamp", String.valueOf(System.currentTimeMillis()));
+                        
+                        // Lấy msgType từ message_type, nếu không có thì thử lấy từ type (nếu type là số)
                         int msgType = json.optInt("message_type", 0);
                         String imageUrl = json.optString("image_url", null);
 
                         if (listener != null) {
-                            listener.onMessageReceived(message, senderId, timestamp,msgType,imageUrl);
+                            listener.onMessageReceived(message, senderId, timestamp, msgType, imageUrl);
                         }
                     } else if (type.equals("presence")) {
                         boolean isOnline = json.getBoolean("is_online");

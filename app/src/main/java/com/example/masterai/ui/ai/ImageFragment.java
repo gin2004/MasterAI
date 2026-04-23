@@ -28,6 +28,7 @@ import com.example.masterai.model.Generation;
 import com.example.masterai.model.GenerationResponse;
 import com.example.masterai.model.ImageResponse;
 import com.example.masterai.model.PromptResponse;
+import com.example.masterai.utils.HintSliderUtil;
 import com.example.masterai.utils.UserManager;
 import com.example.masterai.utils.ViewsUtils;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
@@ -40,6 +41,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import okhttp3.MediaType;
@@ -61,6 +63,7 @@ public class ImageFragment extends Fragment {
     String user_id = null;
     private ImageResponse imageResponse;
     private String currentGenerationId;
+    private HintSliderUtil hintSliderUtil;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -135,8 +138,15 @@ public class ImageFragment extends Fragment {
                 showResultBottomSheet(imageLink);
             }
         });
-
-
+        //hint
+        List<String> myHints = Arrays.asList(
+                "Mô tả bức ảnh bạn muốn tạo...",
+                "Ví dụ: 'Một con mèo phi hành gia trên sao Hỏa'",
+                "Thử: 'Phong cảnh hoàng hôn theo phong cách anime'",
+                "Bạn muốn tạo hình ảnh như thế nào hôm nay?",
+                "Gợi ý: 'Chân dung cô gái cyberpunk, ánh đèn neon'"
+        );
+        hintSliderUtil = new HintSliderUtil(binding.tsHint, binding.etPrompt, myHints);
     }
 
     private void enhancePrompt() {
@@ -176,6 +186,9 @@ public class ImageFragment extends Fragment {
     private void showLoadingBottomSheet() {
         loadingDialog = new BottomSheetDialog(requireContext(), R.style.BottomSheetDialogTheme);
         View view = getLayoutInflater().inflate(R.layout.dialog_loading_bottom_sheet, null);
+
+        ImageView loading = view.findViewById(R.id.loading);
+        ViewsUtils.load(loading,R.drawable.gif_loading_image);
         loadingDialog.setContentView(view);
         loadingDialog.setCancelable(false);
         loadingDialog.show();
@@ -290,6 +303,7 @@ public class ImageFragment extends Fragment {
                         // Tắt loading ngay lập tức khi có phản hồi
                         if (loadingDialog != null && loadingDialog.isShowing()) {
                             loadingDialog.dismiss();
+                            ViewsUtils.clear();
                         }
 
                         if (response.isSuccessful() && response.body() != null) {
@@ -390,5 +404,23 @@ public class ImageFragment extends Fragment {
                         Log.e("API_ERROR", "Assets: " + t.getMessage());
                     }
                 });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Bắt đầu chạy animation khi Activity hiển thị lên màn hình
+        if (hintSliderUtil != null) {
+            hintSliderUtil.startSliding();
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        // Bắt buộc phải dừng khi ẩn Activity để tránh Memory Leak
+        if (hintSliderUtil != null) {
+            hintSliderUtil.stopSliding();
+        }
     }
 }

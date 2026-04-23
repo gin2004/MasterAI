@@ -16,7 +16,7 @@
     </style>
 
     <style name="App.Custom.Indicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
-        <item name="android:color">@color/purple_light</item>
+        <item name="android:color">@color/ai_bottomnavigation</item>
         <item name="marginHorizontal">12dp</item>
     </style>
 
@@ -40,5 +40,9 @@
     <style name="RoundedImageView">
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">16dp</item>
+    </style>
+    <style name="ShapeAppearanceOverlay.App.CornerSize8Percent"
+        parent="">
+        <item name="cornerSize">8%</item>
     </style>
 </resources>

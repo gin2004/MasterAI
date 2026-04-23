@@ -29,8 +29,9 @@
                     app:cardBackgroundColor="@color/white"
                     app:cardCornerRadius="24dp"
                     app:cardElevation="0dp"
-                    app:strokeColor="#F0E0FF"
-                    app:strokeWidth="1.5dp">
+                    app:backgroundTint="@null"
+                    android:background="@drawable/bg_card_border_glow"
+                    app:strokeWidth="1dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -73,18 +74,29 @@
                                 android:textColor="#A0A0A0"
                                 android:textSize="12sp" />
 
-                            <EditText
-                                android:id="@+id/etPrompt"
+                            <FrameLayout
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="8dp"
-                                android:background="@null"
-                                android:gravity="top"
-                                android:hint="Nhập lệnh"
-                                android:lineSpacingExtra="4dp"
-                                android:minLines="8"
-                                android:textColor="#333333"
-                                android:textSize="14sp" />
+                                android:layout_marginTop="8dp">
+
+                                <TextSwitcher
+                                    android:id="@+id/tsHint"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="top"
+                                    android:paddingTop="4dp" />
+
+                                <EditText
+                                    android:id="@+id/etPrompt"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:background="@null"
+                                    android:gravity="top"
+                                    android:lineSpacingExtra="4dp"
+                                    android:minLines="8"
+                                    android:textColor="#333333"
+                                    android:textSize="14sp" />
+                            </FrameLayout>
 
                             <LinearLayout
                                 android:layout_width="match_parent"
@@ -227,7 +239,7 @@
                                     android:layout_width="18dp"
                                     android:layout_height="18dp"
                                     android:src="@drawable/ic_image"
-                                    app:tint="#A066FF" />
+                                    app:tint="@color/purple_primary" />
 
                                 <TextView
                                     android:id="@+id/imgResult"
@@ -248,7 +260,8 @@
                                 android:textAllCaps="false"
                                 android:textSize="16sp"
                                 android:textStyle="bold"
-                                app:backgroundTint="#A066FF"
+                                app:backgroundTint="@null"
+                                android:background="@drawable/bg_button_ai_gradient"
                                 app:cornerRadius="16dp"
                                 app:iconGravity="textStart" />
                         </LinearLayout>

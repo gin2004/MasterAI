@@ -12,12 +12,12 @@ import okhttp3.WebSocketListener;
 
 public class ChatWebSocketClient {
     private WebSocket webSocket;
-    private final String SERVER_URL = "ws://172.11.218.57:8000/ws/chat/";
+    private final String SERVER_URL = "ws://192.168.99.102:8000/ws/chat/";
     private ChatMessageListener listener;
 
     // Interface để truyền dữ liệu về Activity/Fragment
     public interface ChatMessageListener {
-        void onMessageReceived(String message, String senderId, String timestamp);
+        void onMessageReceived(String message, String senderId, String timestamp,int msgType, String imageUrl);
         void onConnectionClosed();
         void onPresenceReceived(String userId, boolean isOnline);
     }
@@ -46,13 +46,14 @@ public class ChatWebSocketClient {
                     JSONObject json = new JSONObject(text);
                     String type = json.getString("type");
                     if (type.equals("chat")) {
-                        String message = json.getString("message");
+                        String message = json.optString("message", "");
                         String senderId = json.getString("sender_id");
                         String timestamp = json.getString("timestamp");
+                        int msgType = json.optInt("message_type", 0);
+                        String imageUrl = json.optString("image_url", null);
 
-                        // Báo cho Activity biết có tin nhắn mới
                         if (listener != null) {
-                            listener.onMessageReceived(message, senderId, timestamp);
+                            listener.onMessageReceived(message, senderId, timestamp,msgType,imageUrl);
                         }
                     } else if (type.equals("presence")) {
                         boolean isOnline = json.getBoolean("is_online");
@@ -79,13 +80,30 @@ public class ChatWebSocketClient {
             }
         });
     }
-    // 2. Gửi tin nhắn lên Server
+    
+    // Gửi tin nhắn văn bản
     public void sendMessage(String message) {
         if (webSocket != null) {
             try {
                 JSONObject json = new JSONObject();
                 json.put("message", message);
-                webSocket.send(json.toString()); // Đẩy chuỗi JSON qua Socket
+                json.put("type", 0);
+                webSocket.send(json.toString());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    // Gửi tin nhắn ảnh (Gửi URL ảnh)
+    public void sendImage(String imageUrl) {
+        if (webSocket != null) {
+            try {
+                JSONObject json = new JSONObject();
+                json.put("message", "[Hình ảnh]");
+                json.put("type", 1);
+                json.put("image_url", imageUrl);
+                webSocket.send(json.toString());
             } catch (Exception e) {
                 e.printStackTrace();
             }

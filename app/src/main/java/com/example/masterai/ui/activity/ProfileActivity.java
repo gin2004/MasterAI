@@ -2,6 +2,7 @@ package com.example.masterai.ui.activity;
 
 import static androidx.core.content.ContentProviderCompat.requireContext;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
@@ -20,6 +21,7 @@ import com.example.masterai.databinding.ActivityProfileBinding;
 import com.example.masterai.model.FollowRequest;
 import com.example.masterai.model.FollowResponse;
 import com.example.masterai.model.User;
+import com.example.masterai.ui.chat.ChatActivity;
 import com.example.masterai.ui.profile.ProfileFragment;
 import com.example.masterai.ui.profile.ProfileLikeFragment;
 import com.example.masterai.ui.profile.ProfileUserPostFragment;
@@ -51,9 +53,24 @@ public class ProfileActivity extends AppCompatActivity {
 
         setupViewPager();
         loadUserProfile();
-        
+
         binding.btnBack.setOnClickListener(v -> finish());
+        setUpChat();
         setUpFollow();
+
+    }
+
+    private void setUpChat() {
+
+        binding.chat.setOnClickListener(v -> {
+            if (userProfile != null) {
+                Intent intent = new Intent(ProfileActivity.this, ChatActivity.class);
+                intent.putExtra("target_user_id", userProfile.getId());
+                intent.putExtra("username", userProfile.getUsername());
+                intent.putExtra("image_url", userProfile.getAvatarUrl());
+                startActivity(intent);
+            }
+        });
 
     }
 
@@ -68,13 +85,13 @@ public class ProfileActivity extends AppCompatActivity {
     private void toggleFollow() {
 
         int countFollower = Integer.parseInt(binding.followerCount.getText().toString());
-        if(userProfile.isFollowed()){
+        if (userProfile.isFollowed()) {
             binding.btnFollow.setText("Theo dõi");
             binding.followerCount.setText(String.valueOf(countFollower - 1));
             userProfile.setFollowed(false);
         } else {
             binding.btnFollow.setText("Đã theo dõi");
-            binding.followerCount.setText(String.valueOf(countFollower+1));
+            binding.followerCount.setText(String.valueOf(countFollower + 1));
             userProfile.setFollowed(true);
         }
         performFollowToggle(userProfile.getId());
@@ -140,7 +157,7 @@ public class ProfileActivity extends AppCompatActivity {
         ProfilePagerAdapter adapter = new ProfilePagerAdapter(this);
         binding.viewPager.setAdapter(adapter);
 
-        int []icon = {android.R.drawable.ic_dialog_dialer, android.R.drawable.gallery_thumb};
+        int[] icon = {android.R.drawable.ic_dialog_dialer, android.R.drawable.gallery_thumb};
         new TabLayoutMediator(binding.tabLayout, binding.viewPager, (tab, position) ->
                 tab.setIcon(icon[position])
         ).attach();

@@ -43,7 +43,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="Free"
-                android:textColor="#FFCCFF"
+                android:textColor="@color/ai_primary"
                 android:textSize="10sp" />
         </LinearLayout>
     </RelativeLayout>

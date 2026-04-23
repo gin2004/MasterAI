@@ -18,6 +18,7 @@ import com.example.masterai.api.RetrofitClient;
 import com.example.masterai.model.UserMessage;
 import com.example.masterai.ui.adapter.UserMessageAdapter;
 import com.example.masterai.utils.UserManager;
+import com.facebook.shimmer.ShimmerFrameLayout;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +31,7 @@ public class MessageFragment extends Fragment {
     
     private RecyclerView rvMessages;
     private UserMessageAdapter adapter;
+    private ShimmerFrameLayout shimmerViewContainer;
     private List<UserMessage> userMessages = new ArrayList<>();
     private String currentUserId;
 
@@ -39,6 +41,7 @@ public class MessageFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_message, container, false);
         
         rvMessages = view.findViewById(R.id.rvMessages);
+        shimmerViewContainer = view.findViewById(R.id.shimmer_view_container);
         rvMessages.setLayoutManager(new LinearLayoutManager(getContext()));
         
         if (UserManager.getInstance(getContext()).getUser() != null) {
@@ -66,6 +69,7 @@ public class MessageFragment extends Fragment {
         RetrofitClient.getApiService().getInbox(currentUserId).enqueue(new Callback<List<UserMessage>>() {
             @Override
             public void onResponse(Call<List<UserMessage>> call, Response<List<UserMessage>> response) {
+                stopShimmer();
                 if (response.isSuccessful() && response.body() != null) {
                     userMessages.clear();
                     userMessages.addAll(response.body());
@@ -75,11 +79,19 @@ public class MessageFragment extends Fragment {
 
             @Override
             public void onFailure(Call<List<UserMessage>> call, Throwable t) {
+                stopShimmer();
                 if (getContext() != null) {
                     Toast.makeText(getContext(), "Lỗi tải danh sách tin nhắn", Toast.LENGTH_SHORT).show();
                 }
             }
         });
+    }
+    private void stopShimmer() {
+        if (shimmerViewContainer != null) {
+            shimmerViewContainer.stopShimmer();
+            shimmerViewContainer.setVisibility(View.GONE);
+            rvMessages.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override

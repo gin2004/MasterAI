@@ -35,7 +35,7 @@
                     android:text="Tạo ảnh"
                     android:textAllCaps="false"
                     android:textColor="@color/white"
-                    app:backgroundTint="#A066FF"
+                    app:backgroundTint="@color/purple_primary"
                     app:cornerRadius="24dp"
                     app:icon="@drawable/ic_image"
                     app:iconSize="18dp" />
@@ -60,12 +60,12 @@
                     android:layout_width="wrap_content"
                     android:layout_height="48dp"
                     android:layout_marginStart="8dp"
-                    android:text="Tạo giọng nói"
+                    android:text="Tạo nhạc"
                     android:textAllCaps="false"
                     android:textColor="#757575"
                     app:backgroundTint="#F5F5F5"
                     app:cornerRadius="24dp"
-                    app:icon="@drawable/ic_speech"
+                    app:icon="@drawable/ic_music"
                     app:iconSize="18dp" />
             </LinearLayout>
         </HorizontalScrollView>

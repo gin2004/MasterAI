@@ -2,6 +2,7 @@ package com.example.masterai.api;
 
 import com.example.masterai.model.Asset;
 import com.example.masterai.model.AssetResponse;
+import com.example.masterai.model.AudioResponse;
 import com.example.masterai.model.FollowRequest;
 import com.example.masterai.model.FollowResponse;
 import com.example.masterai.model.Generation;
@@ -14,6 +15,7 @@ import com.example.masterai.model.PaginatedPostResponse;
 import com.example.masterai.model.Post;
 import com.example.masterai.model.PromptResponse;
 import com.example.masterai.model.StatusRequest;
+import com.example.masterai.model.UploadImageRespone;
 import com.example.masterai.model.User;
 import com.example.masterai.model.UserMessage;
 import com.example.masterai.model.Message;
@@ -35,6 +37,7 @@ import retrofit2.http.Query;
 import java.util.Map;
 import retrofit2.http.DELETE;
 import retrofit2.http.PATCH;
+import retrofit2.http.PUT;
 import retrofit2.http.Path;
 
 public interface ApiService {
@@ -112,7 +115,14 @@ public interface ApiService {
             @Field("user_id") String userId,
             @Field("generation_id") String generationId
     );
-
+    // API Sinh âm thanh
+    @FormUrlEncoded
+    @POST("api/ai/generate-audio/")
+    Call<AudioResponse> generateAudio(
+            @Field("user_id") String userId,
+            @Field("prompt") String prompt
+    );
+    //post
     @POST("api/posts/{id}/like/")
     Call<Map<String, String>> toggleLike(@Path("id") String postId, @Body Map<String, String> body);
 
@@ -174,5 +184,11 @@ public interface ApiService {
     Call<List<Message>> getChatHistory(
             @Path("my_id") String myId,
             @Path("target_id") String targetId
+    );
+
+    @Multipart
+    @POST("api/chat/upload-image/")
+    Call<UploadImageRespone> uploadChatImage(
+            @Part MultipartBody.Part image
     );
 }

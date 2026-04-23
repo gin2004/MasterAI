@@ -28,6 +28,7 @@ import com.example.masterai.databinding.ActivityChatBinding;
 import com.example.masterai.model.ImageResponse;
 import com.example.masterai.model.Message;
 import com.example.masterai.model.StatusRequest;
+import com.example.masterai.model.UploadImageRespone;
 import com.example.masterai.utils.ChatWebSocketClient;
 import com.example.masterai.utils.UserManager;
 
@@ -94,12 +95,12 @@ public class ChatActivity extends AppCompatActivity {
     private void setupWebSocket() {
         webSocketClient = new ChatWebSocketClient(new ChatWebSocketClient.ChatMessageListener() {
             @Override
-            public void onMessageReceived(String message, String senderId, String timestamp) {
+            public void onMessageReceived(String message, String senderId, String timestamp, int msgType, String imageUrl) {
                 runOnUiThread(() -> {
                     if (senderId != null && senderId.equals(myId)) {
                         return;
                     }
-                    Message newMessage = new Message(senderId, message, null, Message.TYPE_TEXT, false);
+                    Message newMessage = new Message(senderId, message, imageUrl,msgType, false);
                     messageList.add(newMessage);
                     messageAdapter.notifyItemInserted(messageList.size() - 1);
                     rvChat.scrollToPosition(messageList.size() - 1);
@@ -155,7 +156,7 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void uploadAndSendImage(Uri uri) {
-        // 1. Hiển thị ảnh tạm thời lên UI (Local Uri)
+        // Hiển thị ảnh tạm thời lên UI (Local Uri)
         Message tempMessage = new Message(myId, "[Đang gửi ảnh...]", uri.toString(), Message.TYPE_IMAGE, true);
         messageList.add(tempMessage);
         int position = messageList.size() - 1;
@@ -173,13 +174,12 @@ public class ChatActivity extends AppCompatActivity {
         MultipartBody.Part body = MultipartBody.Part.createFormData("image", file.getName(), requestFile);
 
         // 3. Gọi API Upload
-        RetrofitClient.getApiService().uploadChatImage(body).enqueue(new Callback<ImageResponse>() {
+        RetrofitClient.getApiService().uploadChatImage(body).enqueue(new Callback<UploadImageRespone>() {
             @Override
-            public void onResponse(Call<ImageResponse> call, Response<ImageResponse> response) {
+            public void onResponse(Call<UploadImageRespone> call, Response<UploadImageRespone> response) {
                 if (response.isSuccessful() && response.body() != null) {
-//                    String serverImageUrl = response.body().getImageUrl();
-                    String serverImageUrl = "https://i.pravatar.cc/150?u=" + targetId;
-                    // 4. Gửi URL ảnh qua WebSocket
+                    String serverImageUrl = response.body().image_url;
+                    //  Gửi URL ảnh qua WebSocket
                     if (webSocketClient != null) {
                         webSocketClient.sendImage(serverImageUrl);
                     }
@@ -189,12 +189,20 @@ public class ChatActivity extends AppCompatActivity {
                     tempMessage.setImageUrl(serverImageUrl);
                     messageAdapter.notifyItemChanged(position);
                 } else {
-                    Toast.makeText(ChatActivity.this, "Upload ảnh thất bại", Toast.LENGTH_SHORT).show();
+                    // --- THÊM ĐOẠN NÀY ĐỂ DEBUG ---
+                    try {
+                        String errorMsg = response.errorBody() != null ? response.errorBody().string() : "Lỗi không xác định";
+                        int statusCode = response.code();
+                        Log.e("Upload_Error", "Mã lỗi: " + statusCode + ", Chi tiết: " + errorMsg);
+                        Toast.makeText(ChatActivity.this, "Lỗi " + statusCode + ": Xem Logcat", Toast.LENGTH_LONG).show();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             }
 
             @Override
-            public void onFailure(Call<ImageResponse> call, Throwable t) {
+            public void onFailure(Call<UploadImageRespone> call, Throwable t) {
                 Log.e("Upload", "Error: " + t.getMessage());
                 Toast.makeText(ChatActivity.this, "Lỗi kết nối khi upload", Toast.LENGTH_SHORT).show();
             }

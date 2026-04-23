@@ -15,6 +15,7 @@ import com.example.masterai.model.PaginatedPostResponse;
 import com.example.masterai.model.Post;
 import com.example.masterai.model.PromptResponse;
 import com.example.masterai.model.StatusRequest;
+import com.example.masterai.model.UploadImageRespone;
 import com.example.masterai.model.User;
 import com.example.masterai.model.UserMessage;
 import com.example.masterai.model.Message;
@@ -170,7 +171,7 @@ public interface ApiService {
 
     @Multipart
     @POST("api/chat/upload-image/")
-    Call<ImageResponse> uploadChatImage(
+    Call<UploadImageRespone> uploadChatImage(
             @Part MultipartBody.Part image
     );
 }

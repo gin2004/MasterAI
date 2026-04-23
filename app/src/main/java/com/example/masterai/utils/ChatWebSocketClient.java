@@ -17,7 +17,7 @@ public class ChatWebSocketClient {
 
     // Interface để truyền dữ liệu về Activity/Fragment
     public interface ChatMessageListener {
-        void onMessageReceived(String message, String senderId, String timestamp);
+        void onMessageReceived(String message, String senderId, String timestamp,int msgType, String imageUrl);
         void onConnectionClosed();
         void onPresenceReceived(String userId, boolean isOnline);
     }
@@ -49,11 +49,11 @@ public class ChatWebSocketClient {
                         String message = json.optString("message", "");
                         String senderId = json.getString("sender_id");
                         String timestamp = json.getString("timestamp");
-                        
-                        // Nếu có imageUrl trong JSON nhận được từ server
-                        // Bạn có thể mở rộng interface listener nếu cần xử lý riêng ảnh
+                        int msgType = json.optInt("message_type", 0);
+                        String imageUrl = json.optString("image_url", null);
+
                         if (listener != null) {
-                            listener.onMessageReceived(message, senderId, timestamp);
+                            listener.onMessageReceived(message, senderId, timestamp,msgType,imageUrl);
                         }
                     } else if (type.equals("presence")) {
                         boolean isOnline = json.getBoolean("is_online");
@@ -87,6 +87,7 @@ public class ChatWebSocketClient {
             try {
                 JSONObject json = new JSONObject();
                 json.put("message", message);
+                json.put("type", 0);
                 webSocket.send(json.toString());
             } catch (Exception e) {
                 e.printStackTrace();
@@ -100,6 +101,7 @@ public class ChatWebSocketClient {
             try {
                 JSONObject json = new JSONObject();
                 json.put("message", "[Hình ảnh]");
+                json.put("type", 1);
                 json.put("image_url", imageUrl);
                 webSocket.send(json.toString());
             } catch (Exception e) {

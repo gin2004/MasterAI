@@ -11,6 +11,7 @@
         <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:id="@+id/nestedScrollView"
             android:fillViewport="true">
 
             <LinearLayout
@@ -360,18 +361,20 @@
                     android:orientation="horizontal">
 
                     <EditText
+                        android:id="@+id/etSearchGenerations"
                         android:layout_width="0dp"
                         android:layout_height="44dp"
                         android:layout_weight="1"
                         android:background="@drawable/bg_input_field"
                         android:drawableStart="@drawable/ic_search"
                         android:drawablePadding="8dp"
-                        android:hint="Search..."
+                        android:hint="Tìm kiếm..."
                         android:paddingHorizontal="12dp"
                         android:textSize="14sp" />
 
                     <com.google.android.material.button.MaterialButton
                         style="@style/Widget.Material3.Button.TonalButton"
+                        android:id="@+id/filer"
                         android:layout_width="wrap_content"
                         android:layout_height="44dp"
                         android:layout_marginStart="8dp"

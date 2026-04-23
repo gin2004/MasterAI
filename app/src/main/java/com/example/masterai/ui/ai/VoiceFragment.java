@@ -7,6 +7,9 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -55,6 +58,9 @@ public class VoiceFragment extends Fragment {
     private List<Generation> audioList = new ArrayList<>();
     private HintSliderUtil hintSliderUtil;
 
+    // Search state
+    private String currentSearchQuery = "";
+
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -64,6 +70,8 @@ public class VoiceFragment extends Fragment {
     }
 
     private void initView() {
+        ViewsUtils.controlBottomNavWithScrollView(binding.nestedScrollView,this);
+
         //hint
         List<String> myHints = Arrays.asList(
                 "Mô tả bài nhạc bạn muốn tạo...",
@@ -73,6 +81,21 @@ public class VoiceFragment extends Fragment {
                 "Gợi ý: 'Nhạc piano buồn, không lời, cinematic'"
         );
         hintSliderUtil = new HintSliderUtil(binding.tsHint, binding.etPrompt, myHints);
+
+        // Search listener
+        binding.etSearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                currentSearchQuery = s.toString();
+                searchAudioGenerations();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
     }
 
     @Override
@@ -92,7 +115,13 @@ public class VoiceFragment extends Fragment {
     }
 
     private void setupListeners() {
-        binding.swipeRefresh.setOnRefreshListener(this::fetchAudioGenerations);
+        binding.swipeRefresh.setOnRefreshListener(() -> {
+            if (currentSearchQuery.isEmpty()) {
+                fetchAudioGenerations();
+            } else {
+                searchAudioGenerations();
+            }
+        });
 
         binding.btnGenerate.setOnClickListener(v -> {
             String promptText = binding.etPrompt.getText().toString().trim();
@@ -102,6 +131,33 @@ public class VoiceFragment extends Fragment {
                 return;
             }
             generateAudioFromAPI(promptText);
+        });
+    }
+
+    private void searchAudioGenerations() {
+        String userId = UserManager.getInstance(getContext()).getUser().getId();
+        RetrofitClient.getApiService().searchGenerations(
+                userId,
+                "audio",
+                currentSearchQuery,
+                "newest",
+                null,
+                null
+        ).enqueue(new Callback<GenerationResponse>() {
+            @Override
+            public void onResponse(Call<GenerationResponse> call, Response<GenerationResponse> response) {
+                binding.swipeRefresh.setRefreshing(false);
+                if (response.isSuccessful() && response.body() != null) {
+                    audioList = response.body().data;
+                    audioAdapter.setAudioList(audioList);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<GenerationResponse> call, Throwable t) {
+                binding.swipeRefresh.setRefreshing(false);
+                Log.e("API_ERROR", "Search Audio: " + t.getMessage());
+            }
         });
     }
 

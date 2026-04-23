@@ -122,6 +122,16 @@ public interface ApiService {
             @Field("user_id") String userId,
             @Field("prompt") String prompt
     );
+    // API Tìm kiếm, Lọc và Sắp xếp Lịch sử đã Generate (AIGeneration)
+    @GET("api/ai/generations/search/") // Đảm bảo endpoint này khớp với urls.py của bạn
+    Call<GenerationResponse> searchGenerations(
+            @Query("user_id") String userId,
+            @Query("type") String type,                      // "image", "avatar", "audio"
+            @Query("search") String searchQuery,             // Từ khóa tìm kiếm trong prompt
+            @Query("sort") String sort,                      // "newest" hoặc "oldest"
+            @Query("aspect_ratio") String aspectRatio,       // VD: "16:9", "1:1"
+            @Query("resolution_config") String resolution    // VD: "1024x1024"
+    );
     //post
     @POST("api/posts/{id}/like/")
     Call<Map<String, String>> toggleLike(@Path("id") String postId, @Body Map<String, String> body);

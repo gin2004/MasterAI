@@ -111,8 +111,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="center"
-                    android:paddingVertical="8dp"
-                    android:background="?attr/selectableItemBackground">
+                    android:paddingVertical="8dp">
 
                     <ImageView
                         android:id="@+id/ivLike"
@@ -136,8 +135,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="center"
-                    android:paddingVertical="8dp"
-                    android:background="?attr/selectableItemBackground">
+                    android:paddingVertical="8dp">
                     <ImageView
                         android:layout_width="20dp"
                         android:layout_height="20dp"

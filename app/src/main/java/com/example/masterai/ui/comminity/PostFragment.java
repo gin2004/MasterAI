@@ -97,7 +97,29 @@ public class PostFragment extends Fragment {
 
         return view;
     }
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
+        // Lấy dữ liệu từ Bundle
+        if (getArguments() != null) {
+            String sharedImageUrl = getArguments().getString("image_url");
+            String sharedPrompt = getArguments().getString("prompt");
+
+            // Nếu có link ảnh được truyền sang -> Load lên màn hình tạo post
+            if (sharedImageUrl != null) {
+                // 1. Chuyển String URL thành Uri và thêm thẳng vào Adapter
+                Uri aiImageUri = Uri.parse(sharedImageUrl);
+                selectedImageUris.add(aiImageUri);
+
+                // Cập nhật lại giao diện RecyclerView
+                updateImagesVisibility();
+                // Tự động điền nội dung prompt vào ô viết bài
+                String defaultText = "Tôi vừa tạo ảnh này bằng AI!\nLệnh: " + sharedPrompt;
+                etPostContent.setText(defaultText);
+            }
+        }
+    }
     private void openGallery() {
         // Mở Photo Picker để chọn nhiều ảnh/video
         pickMultipleMedia.launch(new PickVisualMediaRequest.Builder()

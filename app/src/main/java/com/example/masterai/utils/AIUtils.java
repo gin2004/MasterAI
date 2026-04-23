@@ -24,8 +24,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
 public class AIUtils {
@@ -116,22 +118,29 @@ public class AIUtils {
             Toast.makeText(application, "Lỗi khi chia sẻ ảnh!", Toast.LENGTH_SHORT).show();
         }
     }
-    public String parseDate(String input){
-
+    public String parseDate(String input) {
         String result = input;
-        DateTimeFormatter inputFormatter = null;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            LocalDateTime dateTime = LocalDateTime.parse(input, inputFormatter);
 
-            // 2. Định dạng lại theo ý muốn
-            DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-            result = dateTime.format(outputFormatter);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            try {
+                // 1. Đọc chuỗi thời gian UTC (có 'T' và 'Z')
+                Instant instant = Instant.parse(input);
+
+                // 2. Chuyển đổi sang múi giờ của thiết bị
+                LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+
+                // 3. Format trực tiếp biến localDateTime theo ý muốn
+                DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+                result = localDateTime.format(outputFormatter);
+
+            } catch (Exception e) {
+                // Bọc try-catch để lỡ chuỗi input bị sai format từ server thì app vẫn không bị crash
+                e.printStackTrace();
+            }
         }
 
         return result;
     }
-
 
 
 }

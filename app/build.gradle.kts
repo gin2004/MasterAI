@@ -53,4 +53,12 @@ dependencies {
 
     implementation("androidx.media3:media3-exoplayer:1.3.1")
     implementation("androidx.media3:media3-ui:1.3.1")
+
+    // Paging 3
+    implementation("androidx.paging:paging-runtime:3.3.2")
+    
+    // Lifecycle components for ViewModel and LiveData
+    implementation("androidx.lifecycle:lifecycle-viewmodel:2.8.6")
+    implementation("androidx.lifecycle:lifecycle-livedata:2.8.6")
+    implementation("androidx.lifecycle:lifecycle-runtime:2.8.6")
 }

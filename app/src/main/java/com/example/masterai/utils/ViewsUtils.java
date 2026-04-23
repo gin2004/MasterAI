@@ -5,6 +5,7 @@ import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -38,6 +39,39 @@ public class ViewsUtils {
                 } else if (dy < 0 && !isVisible) {
                     activity.showBottomNav();
                     isVisible = true;
+                }
+            }
+        });
+    }
+    public static void controlBottomNavWithScrollView(NestedScrollView scrollView, Fragment fragment) {
+        // Gán bộ lắng nghe sự kiện cuộn cho NestedScrollView
+        scrollView.setOnScrollChangeListener(new NestedScrollView.OnScrollChangeListener() {
+
+            // Khai báo biến isVisible cục bộ bên trong Listener
+            private boolean isVisible = true;
+
+            @Override
+            public void onScrollChange(@NonNull NestedScrollView v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
+                // Tính toán độ chênh lệch trục Y (dy) tương tự như RecyclerView
+                int dy = scrollY - oldScrollY;
+
+                // Lọc các thao tác cuộn rất nhỏ để tránh giật lag
+                if (Math.abs(dy) < 5) return;
+
+                // Đảm bảo Fragment vẫn đang đính kèm với Activity trước khi ép kiểu
+                if (fragment.isAdded() && fragment.requireActivity() instanceof MainActivity) {
+                    MainActivity activity = (MainActivity) fragment.requireActivity();
+
+                    if (dy > 0 && isVisible) {
+                        // Người dùng cuộn xuống -> Ẩn Bottom Nav
+                        activity.hideBottomNav();
+                        isVisible = false;
+
+                    } else if (dy < 0 && !isVisible) {
+                        // Người dùng cuộn lên -> Hiện Bottom Nav
+                        activity.showBottomNav();
+                        isVisible = true;
+                    }
                 }
             }
         });

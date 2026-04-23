@@ -7,14 +7,20 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,6 +34,8 @@ import com.example.masterai.model.Generation;
 import com.example.masterai.model.GenerationResponse;
 import com.example.masterai.model.ImageResponse;
 import com.example.masterai.model.PromptResponse;
+import com.example.masterai.ui.comminity.PostFragment;
+import com.example.masterai.utils.AIUtils;
 import com.example.masterai.utils.HintSliderUtil;
 import com.example.masterai.utils.UserManager;
 import com.example.masterai.utils.ViewsUtils;
@@ -65,6 +73,12 @@ public class ImageFragment extends Fragment {
     private String currentGenerationId;
     private HintSliderUtil hintSliderUtil;
 
+    // Filter variables
+    private String currentSearchQuery = "";
+    private String currentSort = "newest";
+    private String currentAspectRatio = null;
+    private String currentResolution = null;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -84,7 +98,7 @@ public class ImageFragment extends Fragment {
         rvAssets = binding.rvAssets;
         rvGenerations = binding.rvGenerations;
         //set up bottom nav
-        ViewsUtils.controlBottomNavigationView(rvGenerations, this);
+        ViewsUtils.controlBottomNavWithScrollView(binding.nestedScrollView, this);
 
         // Khởi tạo adapter với trạng thái loading mặc định
         generationAdapter = new GenerationAdapter(new ArrayList<>());
@@ -100,7 +114,11 @@ public class ImageFragment extends Fragment {
         });
         
         binding.swipeRefresh.setOnRefreshListener(() -> {
-            fetchGenerations(0);
+            if (currentSearchQuery.isEmpty() && currentAspectRatio == null && currentResolution == null && currentSort.equals("newest")) {
+                fetchGenerations(0);
+            } else {
+                searchAndFilterGenerations();
+            }
             fetchAssets();
             generationAdapter.setLoading(true);
             assetAdapter.setLoading(true);
@@ -138,6 +156,26 @@ public class ImageFragment extends Fragment {
                 showResultBottomSheet(imageLink);
             }
         });
+
+        // Setup Search and Filter
+        binding.etSearchGenerations.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                currentSearchQuery = s.toString();
+                searchAndFilterGenerations();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+
+        binding.filer.setOnClickListener(v -> {
+            showFilterBottomSheet();
+        });
+
         //hint
         List<String> myHints = Arrays.asList(
                 "Mô tả bức ảnh bạn muốn tạo...",
@@ -147,6 +185,72 @@ public class ImageFragment extends Fragment {
                 "Gợi ý: 'Chân dung cô gái cyberpunk, ánh đèn neon'"
         );
         hintSliderUtil = new HintSliderUtil(binding.tsHint, binding.etPrompt, myHints);
+    }
+
+    private void showFilterBottomSheet() {
+        BottomSheetDialog filterDialog = new BottomSheetDialog(requireContext(), R.style.BottomSheetDialogTheme);
+        View view = getLayoutInflater().inflate(R.layout.layout_filter_bottom_sheet, null);
+
+        RadioGroup rgSort = view.findViewById(R.id.rgSort);
+        Spinner spinnerAspect = view.findViewById(R.id.spinnerFilterAspect);
+        Spinner spinnerResolution = view.findViewById(R.id.spinnerFilterResolution);
+        MaterialButton btnApply = view.findViewById(R.id.btnApplyFilter);
+
+        // Set current values
+        if (currentSort.equals("oldest")) {
+            rgSort.check(R.id.rbOldest);
+        } else {
+            rgSort.check(R.id.rbNewest);
+        }
+
+        // Logic to set spinner selection based on currentAspectRatio/currentResolution can be added here if needed
+
+        btnApply.setOnClickListener(v -> {
+            // Get sort
+            int checkedId = rgSort.getCheckedRadioButtonId();
+            currentSort = (checkedId == R.id.rbOldest) ? "oldest" : "newest";
+
+            // Get aspect ratio
+            String selectedAspect = spinnerAspect.getSelectedItem().toString();
+            currentAspectRatio = selectedAspect.equals("Tất cả tỉ lệ") ? null : selectedAspect;
+
+            // Get resolution
+            String selectedRes = spinnerResolution.getSelectedItem().toString();
+            currentResolution = selectedRes.equals("Tất cả độ phân giải") ? null : selectedRes;
+
+            searchAndFilterGenerations();
+            filterDialog.dismiss();
+        });
+
+        filterDialog.setContentView(view);
+        filterDialog.show();
+    }
+
+    private void searchAndFilterGenerations() {
+        generationAdapter.setLoading(true);
+        // Xử lý chuỗi rỗng -> null để Retrofit bỏ qua param này
+        String safeSearchQuery = currentSearchQuery.trim().isEmpty() ? null : currentSearchQuery.trim();
+
+        RetrofitClient.getApiService().searchGenerations(
+                user_id,
+                "image",
+                currentSearchQuery,
+                currentSort,
+                currentAspectRatio,
+                currentResolution
+        ).enqueue(new Callback<GenerationResponse>() {
+            @Override
+            public void onResponse(Call<GenerationResponse> call, Response<GenerationResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    setupGenerationsList(response.body().data);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<GenerationResponse> call, Throwable t) {
+                Log.e("API_ERROR", "Search: " + t.getMessage());
+            }
+        });
     }
 
     private void enhancePrompt() {
@@ -232,11 +336,54 @@ public class ImageFragment extends Fragment {
 
         ImageView imgResult = view.findViewById(R.id.imgResult);
         ImageView btnBack = view.findViewById(R.id.btnBack);
+        LinearLayout share = view.findViewById(R.id.share);
+
         MaterialButton btnSaveAsset = view.findViewById(R.id.btnSaveAsset);
 
         Glide.with(this).load(imageUrl).into(imgResult);
 
         btnBack.setOnClickListener(v -> resultDialog.dismiss());
+
+        share.setOnClickListener(v -> {
+            // Khởi tạo Popup Menu gắn vào nút share
+            PopupMenu popupMenu = new PopupMenu(requireContext(), share);
+
+            // Thêm các lựa chọn
+            popupMenu.getMenu().add(0, 1, 0, "Đăng lên cộng đồng");
+            popupMenu.getMenu().add(0, 2, 0, "Chia sẻ ra mạng xã hội");
+
+            // Xử lý sự kiện khi chọn menu
+            popupMenu.setOnMenuItemClickListener(item -> {
+                switch (item.getItemId()) {
+                    case 1:
+                        // LỰA CHỌN 1: Đăng lên app
+                        resultDialog.dismiss(); // Đóng bottom sheet
+
+                        // Đóng gói dữ liệu ảnh và prompt
+                        Bundle bundle = new Bundle();
+                        bundle.putString("image_url", imageUrl);
+                        bundle.putString("prompt", binding.etPrompt.getText().toString());
+
+                        PostFragment postFragment = new PostFragment();
+                        postFragment.setArguments(bundle);
+                        requireActivity().getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.fragment_container, postFragment)
+                                .addToBackStack(null)
+                                .commit();
+                        break;
+
+                    case 2:
+                        // LỰA CHỌN 2: Gọi hàm share cũ của bạn
+                        AIUtils.getInstance().shareImageAndText(imageUrl, binding.etPrompt.getText().toString());
+                        break;
+                }
+                return true;
+            });
+
+            //  Hiển thị menu
+            popupMenu.show();
+        });
+
         //lưu vào asset
         btnSaveAsset.setOnClickListener(v->{
             saveAsset();

@@ -10,7 +10,9 @@ import android.widget.ImageView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.widget.Toolbar;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -54,6 +56,14 @@ public class CommentFragment extends Fragment {
 
         initViews(view);
         
+        // Xử lý đẩy view khi bàn phím hiện lên
+        ViewCompat.setOnApplyWindowInsetsListener(view.findViewById(R.id.commentRoot), (v, insets) -> {
+            Insets imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime());
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, imeInsets.bottom);
+            return WindowInsetsCompat.CONSUMED;
+        });
+
         if (postId != null) {
             fetchComments();
         }
@@ -84,6 +94,9 @@ public class CommentFragment extends Fragment {
             public void onResponse(Call<List<Comment>> call, Response<List<Comment>> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     adapter.setComments(response.body());
+                    if (adapter.getItemCount() > 0) {
+                        rvComments.scrollToPosition(adapter.getItemCount() - 1);
+                    }
                 }
             }
             @Override
@@ -105,8 +118,8 @@ public class CommentFragment extends Fragment {
 
         Map<String, Object> body = new HashMap<>();
         body.put("user_id", currentUser.getId());
-        body.put("username", currentUser.getUsername()); // Thêm dòng này
-        body.put("avatar", currentUser.getAvatarUrl());     // Thêm dòng này
+        body.put("username", currentUser.getUsername());
+        body.put("avatar", currentUser.getAvatarUrl());
         body.put("content", content);
         body.put("parent", null);
 
@@ -118,7 +131,6 @@ public class CommentFragment extends Fragment {
                     fetchComments();
                     Toast.makeText(getContext(), "Đã gửi bình luận", Toast.LENGTH_SHORT).show();
                     
-                    // Gửi thông báo cho chủ bài viết
                     if (postUserId != null && !postUserId.equals(currentUser.getId())) {
                         sendNotification(postUserId, currentUser.getUsername() + " đã bình luận bài viết của bạn: " + content, "comment");
                     }

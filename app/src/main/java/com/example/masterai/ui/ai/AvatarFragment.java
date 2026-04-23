@@ -8,15 +8,20 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,6 +36,7 @@ import com.example.masterai.model.GenerationResponse;
 import com.example.masterai.model.ImageResponse;
 import com.example.masterai.model.PromptResponse;
 import com.example.masterai.model.User;
+import com.example.masterai.ui.comminity.PostFragment;
 import com.example.masterai.utils.AIUtils;
 import com.example.masterai.utils.HintSliderUtil;
 import com.example.masterai.utils.UserManager;
@@ -74,6 +80,12 @@ public class AvatarFragment extends Fragment {
     private String currentGenerationId;
     private HintSliderUtil hintSliderUtil;
 
+    // Filter variables
+    private String currentSearchQuery = "";
+    private String currentSort = "newest";
+    private String currentAspectRatio = null;
+    private String currentResolution = null;
+
     private final ActivityResultLauncher<String> pickImageLauncher = registerForActivityResult(
             new ActivityResultContracts.GetContent(),
             uri -> {
@@ -106,7 +118,7 @@ public class AvatarFragment extends Fragment {
         rvAssets = binding.rvAssets;
         rvGenerations = binding.rvGenerations;
         //set up bottom nav
-        ViewsUtils.controlBottomNavigationView(rvGenerations, this);
+        ViewsUtils.controlBottomNavWithScrollView(binding.nestedScrollView,this);
 
         //curent user
         current_user = UserManager.getInstance(requireContext()).getUser();
@@ -128,7 +140,11 @@ public class AvatarFragment extends Fragment {
         binding.swipeRefresh.setOnRefreshListener(() -> {
             generationAdapter.setLoading(true);
             assetAdapter.setLoading(true);
-            fetchGenerations(0);
+            if (currentSearchQuery.isEmpty() && currentAspectRatio == null && currentResolution == null && currentSort.equals("newest")) {
+                fetchGenerations(0);
+            } else {
+                searchAndFilterGenerations();
+            }
             fetchAssets();
         });
 
@@ -168,6 +184,25 @@ public class AvatarFragment extends Fragment {
             pickImageLauncher.launch("image/*");
         });
 
+        // Setup Search and Filter
+        binding.etSearchGenerations.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                currentSearchQuery = s.toString();
+                searchAndFilterGenerations();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+
+        binding.filer.setOnClickListener(v -> {
+            showFilterBottomSheet();
+        });
+
         //hint
         List<String> myHints = Arrays.asList(
                 "Tạo avatar theo phong cách bạn thích...",
@@ -178,6 +213,74 @@ public class AvatarFragment extends Fragment {
         );
         hintSliderUtil = new HintSliderUtil(binding.tsHint, binding.etPrompt, myHints);
 
+    }
+
+    private void showFilterBottomSheet() {
+        BottomSheetDialog filterDialog = new BottomSheetDialog(requireContext(), R.style.BottomSheetDialogTheme);
+        View view = getLayoutInflater().inflate(R.layout.layout_filter_bottom_sheet, null);
+
+        RadioGroup rgSort = view.findViewById(R.id.rgSort);
+        Spinner spinnerAspect = view.findViewById(R.id.spinnerFilterAspect);
+        Spinner spinnerResolution = view.findViewById(R.id.spinnerFilterResolution);
+        MaterialButton btnApply = view.findViewById(R.id.btnApplyFilter);
+
+        if (currentSort.equals("oldest")) {
+            rgSort.check(R.id.rbOldest);
+        } else {
+            rgSort.check(R.id.rbNewest);
+        }
+
+        btnApply.setOnClickListener(v -> {
+            int checkedId = rgSort.getCheckedRadioButtonId();
+            currentSort = (checkedId == R.id.rbOldest) ? "oldest" : "newest";
+
+            String selectedAspect = spinnerAspect.getSelectedItem().toString();
+            currentAspectRatio = selectedAspect.equals("Tất cả tỉ lệ") ? null : selectedAspect;
+
+            String selectedRes = spinnerResolution.getSelectedItem().toString();
+            currentResolution = selectedRes.equals("Tất cả độ phân giải") ? null : selectedRes;
+
+            searchAndFilterGenerations();
+            filterDialog.dismiss();
+        });
+
+        filterDialog.setContentView(view);
+        filterDialog.show();
+    }
+
+    private void searchAndFilterGenerations() {
+        generationAdapter.setLoading(true);
+        RetrofitClient.getApiService().searchGenerations(
+                userId,
+                "avatar",
+                currentSearchQuery,
+                currentSort,
+                currentAspectRatio,
+                currentResolution
+        ).enqueue(new Callback<GenerationResponse>() {
+            @Override
+            public void onResponse(Call<GenerationResponse> call, Response<GenerationResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    setupGenerationsList(response.body().data);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<GenerationResponse> call, Throwable t) {
+                Log.e("API_ERROR", "Search: " + t.getMessage());
+            }
+        });
+    }
+
+    private void setupGenerationsList(List<Generation> gens) {
+        generationAdapter = new GenerationAdapter(gens);
+        generationAdapter.setLoading(false);
+        generationAdapter.setOnItemClickListener(generation -> {
+            currentGenerationId = generation.getId();
+            imageLink = generation.getMediaUrl();
+            showResultBottomSheet(generation.getMediaUrl());
+        });
+        rvGenerations.setAdapter(generationAdapter);
     }
 
     private void enhancePrompt() {
@@ -289,7 +392,43 @@ public class AvatarFragment extends Fragment {
         Glide.with(this).load(imageUrl).into(imgResult);
         btnBack.setOnClickListener(v -> resultDialog.dismiss());
         share.setOnClickListener(v -> {
-            AIUtils.getInstance().shareImageAndText(imageUrl, binding.etPrompt.getText().toString());
+            // Khởi tạo Popup Menu gắn vào nút share
+            PopupMenu popupMenu = new PopupMenu(requireContext(), share);
+
+            // Thêm các lựa chọn
+            popupMenu.getMenu().add(0, 1, 0, "Đăng lên cộng đồng");
+            popupMenu.getMenu().add(0, 2, 0, "Chia sẻ ra mạng xã hội");
+
+            // Xử lý sự kiện khi chọn menu
+            popupMenu.setOnMenuItemClickListener(item -> {
+                switch (item.getItemId()) {
+                    case 1:
+                        // LỰA CHỌN 1: Đăng lên app
+                        resultDialog.dismiss(); // Đóng bottom sheet
+
+                        // Đóng gói dữ liệu ảnh và prompt
+                        Bundle bundle = new Bundle();
+                        bundle.putString("image_url", imageUrl);
+                        bundle.putString("prompt", binding.etPrompt.getText().toString());
+
+                        PostFragment postFragment = new PostFragment();
+                        postFragment.setArguments(bundle);
+                        requireActivity().getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.fragment_container, postFragment)
+                                .addToBackStack(null)
+                                .commit();
+                        break;
+
+                    case 2:
+                        // LỰA CHỌN 2: Gọi hàm share cũ của bạn
+                        AIUtils.getInstance().shareImageAndText(imageUrl, binding.etPrompt.getText().toString());
+                        break;
+                }
+                return true;
+            });
+
+            //  Hiển thị menu
+            popupMenu.show();
         });
         if (btnSaveAsset != null) {
             btnSaveAsset.setOnClickListener(v -> {
@@ -393,14 +532,7 @@ public class AvatarFragment extends Fragment {
                         binding.swipeRefresh.setRefreshing(false);
                         if (response.isSuccessful() && response.body() != null) {
                             List<Generation> list = response.body().data;
-                            generationAdapter = new GenerationAdapter(list);
-                            generationAdapter.setOnItemClickListener(generation -> {
-                                currentGenerationId = generation.getId();
-                                imageLink = generation.getMediaUrl();
-                                showResultBottomSheet(generation.getMediaUrl());
-                            });
-                            generationAdapter.setLoading(false);
-                            rvGenerations.setAdapter(generationAdapter);
+                            setupGenerationsList(list);
                         }
                     }
                     @Override

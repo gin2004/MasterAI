@@ -63,8 +63,18 @@ public interface ApiService {
     @GET("api/posts/feed/")
     Call<List<Post>> getPosts();
 
+    // API lấy feed được gợi ý thông minh
+    @GET("api/posts/recommend/")
+    Call<List<Post>> getRecommendedPosts(@Query("user_id") String userId);
+
+    @Multipart
     @POST("api/posts/")
-    Call<Post> createPost(@Body Post post);
+    Call<Post> createPost(
+            @Part("user_id") RequestBody userId,
+            @Part("content") RequestBody content,
+            @Part("visibility") RequestBody visibility,
+            @Part List<MultipartBody.Part> files // "files" phải khớp với backend
+    );
 
     // API cho Ai Service
     // API Nâng cấp prompt
@@ -125,8 +135,15 @@ public interface ApiService {
     @DELETE("api/posts/{id}/")
     Call<Map<String, String>> deletePost(@Path("id") String postId);
 
+    @Multipart
     @PATCH("api/posts/{id}/update/")
-    Call<Post> updatePost(@Path("id") String postId, @Body Map<String, Object> body);
+    Call<Post> updatePost(
+            @Path("id") String postId,
+            @Part("content") RequestBody content,
+            @Part("visibility") RequestBody visibility,
+            @Part List<MultipartBody.Part> kept_media, // Danh sách các String (URL ảnh cũ)
+            @Part List<MultipartBody.Part> files       // Danh sách các File (Ảnh mới upload)
+    );
     @GET("api/posts/user/{user_id}/")
     Call<PaginatedPostResponse<Post>> getUserPosts(
             @Path("user_id") String userId,

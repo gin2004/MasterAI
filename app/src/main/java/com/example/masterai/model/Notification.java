@@ -8,9 +8,8 @@ public class Notification implements Serializable {
     
     @SerializedName("recipient_id")
     private String recipientId;
-    
-    private String sender_name;
-    private String sender_avatar;
+
+    private Sender sender;
     private String content; // Keep for backward compatibility or direct use
     
     private String title;
@@ -41,11 +40,31 @@ public class Notification implements Serializable {
     public String getRecipientId() { return recipientId; }
     public void setRecipientId(String recipientId) { this.recipientId = recipientId; }
 
-    public String getSenderName() { return sender_name; }
-    public void setSenderName(String sender_name) { this.sender_name = sender_name; }
+    public static class Sender implements Serializable {
+        private String id;
+        private String username;
+        private String avatar;
 
-    public String getSenderAvatar() { return sender_avatar; }
-    public void setSenderAvatar(String sender_avatar) { this.sender_avatar = sender_avatar; }
+        public String getId() { return id; }
+        public String getUsername() { return username; }
+        public String getAvatar() { return avatar; }
+
+        // Setter nếu cần
+        public void setUsername(String username) { this.username = username; }
+        public void setAvatar(String avatar) { this.avatar = avatar; }
+    }
+
+    public Sender getSender() { return sender; }
+    public void setSender(Sender sender) { this.sender = sender; }
+
+    // Sửa lại hàm getSenderName và getSenderAvatar để lấy từ object Sender
+    public String getSenderName() {
+        return (sender != null) ? sender.getUsername() : null;
+    }
+
+    public String getSenderAvatar() {
+        return (sender != null) ? sender.getAvatar() : null;
+    }
 
     public String getContent() { 
         if (content != null && !content.isEmpty()) {

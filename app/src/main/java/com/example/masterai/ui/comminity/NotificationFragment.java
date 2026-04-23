@@ -1,6 +1,11 @@
 package com.example.masterai.ui.comminity;
 
+import android.content.Context;
+import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.text.SpannableString;
+import android.text.Spanned;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -94,7 +99,7 @@ public class NotificationFragment extends Fragment {
         String userId = currentUser.getId();
 
         // ⚠️ ĐỔI IP CHO ĐÚNG MÁY BẠN
-        String wsUrl = "ws://192.168.1.10:8001/ws/notifications/" + userId + "/";
+        String wsUrl = "ws://172.11.218.57:8001/ws/notifications/" + userId + "/";
 
         client = new OkHttpClient();
 
@@ -111,36 +116,27 @@ public class NotificationFragment extends Fragment {
 
             @Override
             public void onMessage(@NonNull WebSocket webSocket, @NonNull String text) {
-                Log.d(TAG, "Realtime notification raw: " + text);
-
                 try {
                     JSONObject json = new JSONObject(text);
-                    
-                    // Lấy dữ liệu từ payload nếu có (một số backend lồng trong 'payload' hoặc 'data')
-                    JSONObject data = json.has("notification") ? json.getJSONObject("notification") : json;
+                    // Backend thường gửi: { "type": "send_notification", "data": { ... } }
+                    JSONObject data = json.getJSONObject("data");
 
                     Notification notification = new Notification();
                     notification.setId(data.optString("id"));
-                    
-                    // Ưu tiên lấy field 'content', sau đó mới đến 'message' hoặc 'title'
-                    String content = data.optString("content");
-                    if (content.isEmpty()) {
-                        String message = data.optString("message");
-                        String title = data.optString("title");
-                        if (!title.isEmpty() && !message.isEmpty()) {
-                            content = title + ": " + message;
-                        } else if (!message.isEmpty()) {
-                            content = message;
-                        } else {
-                            content = title;
-                        }
+
+                    // Logic gộp content
+                    String message = data.optString("message");
+                    String title = data.optString("title");
+                    notification.setContent(title + ": " + message);
+
+                    // 🔥 Lấy Object Sender từ JSON lồng nhau
+                    if (data.has("sender") && !data.isNull("sender")) {
+                        JSONObject senderJson = data.getJSONObject("sender");
+                        Notification.Sender senderObj = new Notification.Sender();
+                        senderObj.setUsername(senderJson.optString("username"));
+                        senderObj.setAvatar(senderJson.optString("avatar"));
+                        notification.setSender(senderObj);
                     }
-                    
-                    notification.setContent(content);
-                    notification.setCreatedAt(data.optString("created_at", "Vừa xong"));
-                    notification.setSenderName(data.optString("sender_name"));
-                    notification.setSenderAvatar(data.optString("sender_avatar"));
-                    notification.setRead(false);
 
                     if (getActivity() != null) {
                         getActivity().runOnUiThread(() -> {
@@ -149,7 +145,6 @@ public class NotificationFragment extends Fragment {
                             rvNotifications.scrollToPosition(0);
                         });
                     }
-
                 } catch (Exception e) {
                     Log.e(TAG, "Parse error", e);
                 }
@@ -237,25 +232,76 @@ public class NotificationFragment extends Fragment {
         public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
             Notification item = items.get(position);
 
-            holder.tvContent.setText(item.getContent());
-            holder.tvTime.setText(item.getCreatedAt());
-            holder.vDot.setVisibility(item.isRead() ? View.GONE : View.VISIBLE);
+            // 1. Xử lý nội dung in đậm tên người gửi (chuẩn Facebook)
+            String displayName = (item.getSenderName() != null) ? item.getSenderName() : "Hệ thống";
+            String message = " " + item.getMessage();
 
-            if (item.getSenderAvatar() != null && !item.getSenderAvatar().isEmpty()) {
-                Glide.with(holder.ivAvatar.getContext())
-                        .load(item.getSenderAvatar())
-                        .circleCrop()
-                        .into(holder.ivAvatar);
+            SpannableString spannable = new SpannableString(displayName + message);
+            spannable.setSpan(
+                    new android.text.style.StyleSpan(android.graphics.Typeface.BOLD),
+                    0, displayName.length(),
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            );
+            holder.tvContent.setText(spannable);
+
+            // 2. Xử lý thời gian (Sử dụng hàm format bên dưới)
+            holder.tvTime.setText(formatTimeAgo(item.getCreatedAt()));
+
+            // 3. Xử lý trạng thái Đã đọc / Chưa đọc
+            if (item.isRead()) {
+                holder.itemView.setBackgroundColor(Color.TRANSPARENT); // Đã đọc thì nền trắng/trong suốt
+                holder.vDot.setVisibility(View.GONE);
             } else {
-                holder.ivAvatar.setImageResource(R.drawable.ic_nav_profile);
+                holder.itemView.setBackgroundColor(Color.parseColor("#E7F3FF")); // Chưa đọc thì nền xanh nhạt
+                holder.vDot.setVisibility(View.VISIBLE);
             }
 
+            // 4. Load Avatar (Giữ nguyên logic Glide của bạn nhưng thêm placeholder tốt hơn)
+            Glide.with(holder.ivAvatar.getContext())
+                    .load(item.getSenderAvatar())
+                    .circleCrop()
+                    .placeholder(R.drawable.ic_nav_profile)
+                    .error(R.drawable.ic_nav_profile)
+                    .into(holder.ivAvatar);
+
+            // 5. Click xử lý
             holder.itemView.setOnClickListener(v -> {
+                // Lấy context trực tiếp từ view bị click (v)
+                Context context = v.getContext();
+
+                // Truyền context vào hàm xử lý click
+                handleNotificationClick(context, item);
+
                 if (!item.isRead()) {
                     markAsRead(item, position);
                 }
             });
         }
+
+        private String formatTimeAgo(String dateStr) {
+            try {
+                // Format ISO 8601 từ Django trả về
+                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault());
+                sdf.setTimeZone(java.util.TimeZone.getTimeZone("UTC"));
+                long time = sdf.parse(dateStr).getTime();
+                long now = System.currentTimeMillis();
+
+                return android.text.format.DateUtils.getRelativeTimeSpanString(time, now, android.text.format.DateUtils.MINUTE_IN_MILLIS).toString();
+            } catch (Exception e) {
+                return dateStr; // Trả về mặc định nếu lỗi
+            }
+        }
+
+        private void handleNotificationClick(Context context, Notification item) {
+            String type = item.getType();
+
+            if ("comment".equals(type) || "like".equals(type)) {
+                // Ví dụ điều hướng
+                 Intent intent = new Intent(context, PostDetailActivity.class);
+                 context.startActivity(intent);
+            }
+        }
+
 
         @Override
         public int getItemCount() {

@@ -10,7 +10,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -22,9 +21,9 @@ import com.example.masterai.model.Notification;
 import com.example.masterai.model.Post;
 import com.example.masterai.model.User;
 import com.example.masterai.ui.activity.ProfileActivity;
-import com.example.masterai.ui.profile.ProfileFragment;
 import com.example.masterai.utils.PostUtils;
 import com.example.masterai.utils.UserManager;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -67,9 +66,9 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         boolean isMyPost = currentUser != null && currentUser.getId().equals(post.getUserId());
 
         if (isMyPost) {
-            holder.llMyPostActions.setVisibility(View.VISIBLE);
+            holder.btnMore.setVisibility(View.VISIBLE);
         } else {
-            holder.llMyPostActions.setVisibility(View.GONE);
+            holder.btnMore.setVisibility(View.GONE);
         }
 
         loadUserInfo(holder, post.getUserId(), isMyPost);
@@ -82,7 +81,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             CommentFragment commentFragment = new CommentFragment();
             Bundle bundle = new Bundle();
             bundle.putString("post_id", post.getId());
-            bundle.putString("post_user_id", post.getUserId()); // Pass author ID for notification
+            bundle.putString("post_user_id", post.getUserId());
             commentFragment.setArguments(bundle);
             activity.getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, commentFragment)
@@ -90,38 +89,15 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
                 .commit();
         });
 
-        holder.btnDelete.setOnClickListener(v -> {
-            new AlertDialog.Builder(v.getContext())
-                .setTitle("Xóa bài đăng")
-                .setMessage("Bạn có chắc chắn muốn xóa bài đăng này không?")
-                .setPositiveButton("Xóa", (dialog, which) -> {
-                    int currentPosition = holder.getAdapterPosition();
-                    if (currentPosition != RecyclerView.NO_POSITION) {
-                        deletePost(post.getId(), currentPosition, v);
-                    }
-                })
-                .setNegativeButton("Hủy", null)
-                .show();
-        });
-
-        holder.btnEdit.setOnClickListener(v -> {
-            AppCompatActivity activity = (AppCompatActivity) v.getContext();
-            EditPostFragment editPostFragment = EditPostFragment.newInstance(post);
-            activity.getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragment_container, editPostFragment)
-                .addToBackStack(null)
-                .commit();
-        });
+        holder.btnMore.setOnClickListener(v -> showPostOptions(v, post, position));
 
         // Xử lý sự kiện click vào Avatar hoặc Username
         View.OnClickListener profileClickListener = v -> {
             if (currentUser != null && post.getUserId().equals(currentUser.getId())) {
-                // Nếu là bản thân -> Chuyển sang ProfileFragment trong MainActivity
                 if (v.getContext() instanceof MainActivity) {
                     ((MainActivity) v.getContext()).navigateToProfile();
                 }
             } else {
-                // Nếu là người khác -> Chuyển sang ProfileActivity
                 Intent intent = new Intent(v.getContext(), ProfileActivity.class);
                 intent.putExtra("user_id", post.getUserId());
                 v.getContext().startActivity(intent);
@@ -130,6 +106,32 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
 
         holder.ivAvatar.setOnClickListener(profileClickListener);
         holder.tvName.setOnClickListener(profileClickListener);
+    }
+
+    private void showPostOptions(View view, Post post, int position) {
+        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(view.getContext());
+        View bottomSheetView = LayoutInflater.from(view.getContext()).inflate(R.layout.bottom_sheet_post_options, null);
+        bottomSheetDialog.setContentView(bottomSheetView);
+
+        View llEdit = bottomSheetView.findViewById(R.id.llEdit);
+        View llDelete = bottomSheetView.findViewById(R.id.llDelete);
+
+        llEdit.setOnClickListener(v -> {
+            bottomSheetDialog.dismiss();
+            AppCompatActivity activity = (AppCompatActivity) view.getContext();
+            EditPostFragment editPostFragment = EditPostFragment.newInstance(post);
+            activity.getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, editPostFragment)
+                .addToBackStack(null)
+                .commit();
+        });
+
+        llDelete.setOnClickListener(v -> {
+            bottomSheetDialog.dismiss();
+            deletePost(post.getId(), position, view);
+        });
+
+        bottomSheetDialog.show();
     }
 
     private void deletePost(String postId, int position, View view) {
@@ -158,10 +160,10 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         if (currentUser == null) return;
         Map<String, String> body = new HashMap<>();
         body.put("user_id", currentUser.getId());
+        body.put("username", currentUser.getUsername()); // Thêm dòng này
+        body.put("avatar", currentUser.getAvatarUrl());     // Thêm dòng này
         
-        // Optimistic UI update
         int initialLikes = post.getLikeCount();
-        
 
         RetrofitClient.getApiService().toggleLike(post.getId(), body).enqueue(new Callback<Map<String, String>>() {
             @Override
@@ -170,16 +172,12 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
                     String message = response.body().get("message");
                     if ("liked".equals(message)) {
                         post.setLikeCount(initialLikes + 1);
-                        holder.tvLikeCount.setText(String.valueOf(post.getLikeCount()));
                         holder.ivLike.setColorFilter(holder.itemView.getContext().getColor(R.color.purple_primary));
-                        
-                        // Gửi thông báo cho chủ bài viết
                         if (!currentUser.getId().equals(post.getUserId())) {
                             sendNotification(post.getUserId(), currentUser.getUsername() + " đã thích bài viết của bạn", "like");
                         }
                     } else {
                         post.setLikeCount(initialLikes - 1);
-                        holder.tvLikeCount.setText(String.valueOf(post.getLikeCount()));
                         holder.ivLike.setColorFilter(holder.itemView.getContext().getColor(R.color.gray_text));
                     }
                     holder.tvLikeCount.setText(String.valueOf(post.getLikeCount()));
@@ -250,10 +248,10 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
     public int getItemCount() { return posts.size(); }
 
     static class PostViewHolder extends RecyclerView.ViewHolder {
-        ImageView ivAvatar, ivLike, btnEdit, btnDelete;
+        ImageView ivAvatar, ivLike, btnMore;
         TextView tvName, tvTime, tvContent, tvLikeCount, tvCommentCount;
         RecyclerView rvPostMedia;
-        View btnComment, btnLike, btnFollow, llMyPostActions;
+        View btnComment, btnLike, btnFollow;
 
         public PostViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -267,11 +265,8 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             rvPostMedia = itemView.findViewById(R.id.rvPostMedia);
             btnComment = itemView.findViewById(R.id.btnComment);
             btnLike = itemView.findViewById(R.id.btnLike);
-
             btnFollow = itemView.findViewById(R.id.btnFollow);
-            llMyPostActions = itemView.findViewById(R.id.llMyPostActions);
-            btnEdit = itemView.findViewById(R.id.btnEdit);
-            btnDelete = itemView.findViewById(R.id.btnDelete);
+            btnMore = itemView.findViewById(R.id.btnMore);
         }
     }
 }

@@ -4,9 +4,7 @@ plugins {
 
 android {
     namespace = "com.example.masterai"
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.masterai"
@@ -42,6 +40,7 @@ dependencies {
     implementation(libs.activity)
     implementation(libs.constraintlayout)
     implementation(libs.shimmer)
+    implementation(libs.commons.io)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
@@ -50,6 +49,7 @@ dependencies {
     implementation("com.github.bumptech.glide:glide:4.16.0")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+}
 
 
     implementation("androidx.media3:media3-exoplayer:1.3.1")

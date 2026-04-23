@@ -33,13 +33,8 @@ import retrofit2.http.POST;
 import retrofit2.http.Part;
 import retrofit2.http.Query;
 import java.util.Map;
-import retrofit2.Call;
-import retrofit2.http.Body;
 import retrofit2.http.DELETE;
-import retrofit2.http.GET;
 import retrofit2.http.PATCH;
-import retrofit2.http.POST;
-import retrofit2.http.PUT;
 import retrofit2.http.Path;
 
 public interface ApiService {
@@ -64,6 +59,10 @@ public interface ApiService {
     // API cho Post
     @GET("api/posts/feed/")
     Call<List<Post>> getPosts();
+
+    // API lấy feed được gợi ý thông minh
+    @GET("api/posts/recommend/")
+    Call<List<Post>> getRecommendedPosts(@Query("user_id") String userId);
 
     @Multipart
     @POST("api/posts/")

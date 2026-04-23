@@ -57,8 +57,8 @@ public class CommunityFragment extends Fragment {
                 .commit();
         });
 
-        // Tải danh sách bài viết từ API
-        fetchPosts();
+        // Tải danh sách bài viết từ API gợi ý thông minh
+        fetchRecommendedPosts();
 
         return view;
     }
@@ -104,6 +104,31 @@ public class CommunityFragment extends Fragment {
         }
     }
 
+    private void fetchRecommendedPosts() {
+        if (currentUser == null) {
+            // Nếu chưa đăng nhập, dùng API cũ hoặc thông báo
+            fetchPosts();
+            return;
+        }
+
+        RetrofitClient.getApiService().getRecommendedPosts(currentUser.getId()).enqueue(new Callback<List<Post>>() {
+            @Override
+            public void onResponse(Call<List<Post>> call, Response<List<Post>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    postAdapter.setPosts(response.body());
+                } else {
+                    // Nếu lỗi API gợi ý, thử lại bằng API feed thông thường
+                    fetchPosts();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Post>> call, Throwable t) {
+                fetchPosts(); // Fallback
+            }
+        });
+    }
+
     private void fetchPosts() {
         RetrofitClient.getApiService().getPosts().enqueue(new Callback<List<Post>>() {
             @Override
@@ -125,7 +150,7 @@ public class CommunityFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        // Cập nhật lại danh sách mỗi khi fragment hiển thị lại (ví dụ sau khi đăng bài xong quay lại)
-        fetchPosts();
+        // Cập nhật lại danh sách gợi ý khi fragment hiển thị lại
+        fetchRecommendedPosts();
     }
 }

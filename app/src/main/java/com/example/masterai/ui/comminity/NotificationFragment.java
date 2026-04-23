@@ -99,7 +99,7 @@ public class NotificationFragment extends Fragment {
         String userId = currentUser.getId();
 
         // ⚠️ ĐỔI IP CHO ĐÚNG MÁY BẠN
-        String wsUrl = "ws://172.20.10.2:8001/ws/notifications/" + userId + "/";
+        String wsUrl = "ws://172.11.218.57:8001/ws/notifications/" + userId + "/";
 
         client = new OkHttpClient();
 

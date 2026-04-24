@@ -53,6 +53,13 @@ public interface ApiService {
     @GET("api/users/{id}/")
     Call<User> getUserById(@Path("id") String id,@Query("current_user_id") String currentUserId);
 
+    @PATCH("api/users/{id}/update/")
+    Call<User> updateProfile(@Path("id") String id, @Body Map<String, Object> updates);
+
+    @Multipart
+    @PATCH("api/users/{id}/update-avatar/")
+    Call<User> updateAvatar(@Path("id") String id, @Part MultipartBody.Part avatar);
+
     @POST("api/users/{user_id}/follow/")
     Call<FollowResponse> toggleFollow(
             @Path("user_id") String targetUserId, // ID của người được follow (truyền lên URL)

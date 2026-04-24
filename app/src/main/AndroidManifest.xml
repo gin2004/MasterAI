@@ -29,6 +29,11 @@
         <activity
             android:name=".ui.activity.ProfileActivity"
             android:exported="false" />
+        
+        <activity
+            android:name=".ui.profile.EditProfileActivity"
+            android:exported="false"
+            android:label="Chỉnh sửa hồ sơ" />
 
         <provider
             android:name="androidx.core.content.FileProvider"

@@ -1,5 +1,6 @@
 package com.example.masterai.ui.profile;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,8 +30,17 @@ public class ProfileFragment extends Fragment {
         
         initView();
         setupViewPager();
+        setupEvents();
         
         return binding.getRoot();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Refresh profile data when returning from EditProfileActivity
+        currentUser = UserManager.getInstance(requireContext()).getUser();
+        initView();
     }
 
     private void initView() {
@@ -45,6 +55,13 @@ public class ProfileFragment extends Fragment {
                         .into(binding.ivProfileAvatar);
             }
         }
+    }
+
+    private void setupEvents() {
+        binding.btnEditProfile.setOnClickListener(v -> {
+            Intent intent = new Intent(getContext(), EditProfileActivity.class);
+            startActivity(intent);
+        });
     }
 
     private void setupViewPager() {

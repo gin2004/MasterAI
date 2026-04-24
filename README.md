@@ -120,4 +120,4 @@ sequenceDiagram
 4.  Sync Gradle và Run ứng dụng trên Emulator (API 24+) hoặc thiết bị thật.
 
 ---
-© 2024 MasterAI Team - Mang trí tuệ nhân tạo đến gần hơn với cộng đồng.
+© 2026 MasterAI Team - Mang trí tuệ nhân tạo đến gần hơn với cộng đồng.

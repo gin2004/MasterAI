@@ -70,8 +70,7 @@
                             android:background="@drawable/bg_circle"
                             android:backgroundTint="@color/white"
                             android:padding="4dp"
-                            android:src="@drawable/ic_edit"
-                            app:tint="@color/black" />
+                            android:src="@drawable/ic_edit_pen" />
                     </FrameLayout>
 
                     <LinearLayout

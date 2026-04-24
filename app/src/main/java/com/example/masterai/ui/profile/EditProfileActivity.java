@@ -112,7 +112,6 @@ public class EditProfileActivity extends AppCompatActivity {
         Map<String, Object> updates = new HashMap<>();
         updates.put("username", name);
         updates.put("email", email);
-        updates.put("bio", bio);
 
         apiService.updateProfile(currentUser.getId(), updates).enqueue(new Callback<User>() {
             @Override
